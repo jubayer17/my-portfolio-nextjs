@@ -1,20 +1,29 @@
-# My Portfolio (Next.js)
+# 🌐 My Portfolio (Next.js)
 
-A modern personal portfolio built using **Next.js**, showcasing **projects, skills, and experience** with a **responsive design** and smooth performance.
+A sleek and modern **personal portfolio** built using **Next.js**, designed to showcase your **projects, skills, and experience** with style and performance.
+
+---
 
 ## 🚀 Tech Stack
-- **Next.js**
-- **React**
-- **Tailwind CSS**
+🧩 **Frontend:** Next.js, React  
+🎨 **Styling:** Tailwind CSS  
+⚡ **Deployment:** Vercel / Netlify  
 
-## 📸 Features
-- Responsive UI for all devices  
-- Fast and optimized performance  
-- Easy to customize and deploy  
+---
 
-## 🔧 Installation
+## ✨ Features
+✅ Fully responsive design  
+⚡ Fast load times & SEO friendly  
+🛠️ Easy to edit and customize  
+📁 Organized project structure  
+
+---
+
+## 🧩 Installation
+To run the project locally:
+
 ```bash
-git clone https://github.com/<your-username>/my-portfolio-nextjs.git
+git clone https://github.com/jubayer17/my-portfolio-nextjs.git
 cd my-portfolio-nextjs
 npm install
 npm run dev
