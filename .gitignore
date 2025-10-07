@@ -43,3 +43,6 @@ next-env.d.ts
 # history folder (VS Code history extension)
 .history/
 **/.history/
+
+# old portfolio folder (separate project)
+my-portfolio/
