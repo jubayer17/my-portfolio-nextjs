@@ -20,7 +20,7 @@ const socialLinksData = [
     external: false,
   },
   {
-    href: "https://codeforces.com/profile/jubayer17",
+    href: "https://codeforces.com/profile/GalvaaaTroN",
     icon: "fas fa-code",
     label: "Codeforces",
     external: true,

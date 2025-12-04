@@ -27,54 +27,54 @@ export interface Project {
 
 export const projectsData: Project[] = [
     {
-        title: "Tech-Nest",
-        slug: "tech-nest",
+        title: "CF Ladder",
+        slug: "cf-ladder",
         description:
-            "A full-featured tech eCommerce platform with Next.js, offering seamless browsing, secure payments via Stripe/COD, and robust admin management.",
+            "A comprehensive Codeforces problem and progress tracker designed to help competitive programmers organize their practice, track submissions, and monitor improvement over time.",
         detailedDescription:
-            "Tech-Nest is a comprehensive eCommerce platform designed specifically for technology products. Built with modern web technologies, it provides a seamless shopping experience with advanced features like real-time inventory management, secure payment processing, and an intuitive admin dashboard.",
-        image: "/assets/technestSS.png",
+            "CF Ladder is an advanced tracking platform for Codeforces competitive programmers. It provides real-time submission tracking, personalized problem recommendations based on rating, visual progress analytics, and streak tracking. Built with Next.js and powered by the Codeforces API, it helps users stay motivated and organized in their competitive programming journey.",
+        image: "/assets/ladderSS.png",
         images: [
-            "/assets/technestSS.png",
-            "/assets/ss.png"
+            "/assets/ladderSS.png"
         ],
-        imageAlt: "Tech-Nest Dashboard",
-        icon: "fas fa-shopping-cart",
-        technologies: ["Next.js", "React", "MongoDB", "Stripe"],
+        imageAlt: "CF Ladder Dashboard",
+        icon: "fas fa-chart-line",
+        technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Codeforces API"],
         techStack: {
             frontend: ["Next.js", "React", "TypeScript", "Tailwind CSS"],
-            backend: ["Node.js", "Express.js", "Next.js API Routes"],
-            database: ["MongoDB", "Mongoose"],
-            tools: ["Stripe", "Vercel", "Git", "VS Code"]
+            backend: ["Next.js API Routes", "Codeforces API Integration"],
+            database: ["LocalStorage", "Browser Cache"],
+            tools: ["Axios", "Recharts", "Git", "Vercel"]
         },
         features: [
-            "🛒 Complete shopping cart functionality",
-            "💳 Secure payment processing with Stripe",
-            "📦 Cash on Delivery (COD) option",
-            "👨‍💼 Comprehensive admin dashboard",
-            "📱 Fully responsive design",
-            "🔍 Advanced product search and filtering",
-            "📊 Real-time inventory management",
-            "👤 User authentication and profiles",
-            "📧 Email notifications for orders",
-            "⭐ Product reviews and ratings"
+            "📊 Real-time submission tracking from Codeforces",
+            "🎯 Personalized problem recommendations by rating",
+            "📈 Visual progress analytics with charts and graphs",
+            "🔥 Daily solve streak tracking",
+            "📝 Track unsolved problems with verdicts",
+            "🎨 Beautiful heatmap showing solving activity",
+            "⚡ Fast problem filtering by tags and difficulty",
+            "📱 Fully responsive mobile-friendly design",
+            "🌙 Dark mode support",
+            "💾 Local caching for improved performance"
         ],
         challenges: [
-            "Implementing secure payment gateway integration",
-            "Optimizing database queries for better performance",
-            "Creating responsive design for mobile devices",
-            "Managing complex state for cart functionality"
+            "Integrating and parsing Codeforces API data efficiently",
+            "Implementing complex filtering and sorting algorithms",
+            "Creating engaging data visualizations",
+            "Optimizing performance for large datasets"
         ],
         learnings: [
-            "Advanced Next.js features and API routes",
-            "Payment gateway integration best practices",
-            "Database optimization techniques",
-            "User experience design principles"
+            "Advanced Next.js and TypeScript patterns",
+            "Data visualization with charts and heatmaps",
+            "API integration and caching strategies",
+            "State management for complex applications"
         ],
-        liveUrl: "https://quick-cart-ax1j.vercel.app/",
-        githubUrl: "https://github.com/jubayer17",
-        timeline: "3 months",
-        category: "eCommerce",
+        liveUrl: "https://cf-ladder-pro.vercel.app/",
+        githubUrl: "https://github.com/jubayer17/cf-ladder",
+        timeline: "2 months",
+        category: "Competitive Programming",
+        inDevelopment: false,
         animationClass: "animate-on-scroll-left",
     },
     {
@@ -127,6 +127,57 @@ export const projectsData: Project[] = [
         category: "Education",
         inDevelopment: false,
         animationClass: "animate-on-scroll",
+    },
+    {
+        title: "Tech-Nest",
+        slug: "tech-nest",
+        description:
+            "A full-featured tech eCommerce platform with Next.js, offering seamless browsing, secure payments via Stripe/COD, and robust admin management.",
+        detailedDescription:
+            "Tech-Nest is a comprehensive eCommerce platform designed specifically for technology products. Built with modern web technologies, it provides a seamless shopping experience with advanced features like real-time inventory management, secure payment processing, and an intuitive admin dashboard.",
+        image: "/assets/technestSS.png",
+        images: [
+            "/assets/technestSS.png",
+            "/assets/ss.png"
+        ],
+        imageAlt: "Tech-Nest Dashboard",
+        icon: "fas fa-shopping-cart",
+        technologies: ["Next.js", "React", "MongoDB", "Stripe"],
+        techStack: {
+            frontend: ["Next.js", "React", "TypeScript", "Tailwind CSS"],
+            backend: ["Node.js", "Express.js", "Next.js API Routes"],
+            database: ["MongoDB", "Mongoose"],
+            tools: ["Stripe", "Vercel", "Git", "VS Code"]
+        },
+        features: [
+            "🛒 Complete shopping cart functionality",
+            "💳 Secure payment processing with Stripe",
+            "📦 Cash on Delivery (COD) option",
+            "👨‍💼 Comprehensive admin dashboard",
+            "📱 Fully responsive design",
+            "🔍 Advanced product search and filtering",
+            "📊 Real-time inventory management",
+            "👤 User authentication and profiles",
+            "📧 Email notifications for orders",
+            "⭐ Product reviews and ratings"
+        ],
+        challenges: [
+            "Implementing secure payment gateway integration",
+            "Optimizing database queries for better performance",
+            "Creating responsive design for mobile devices",
+            "Managing complex state for cart functionality"
+        ],
+        learnings: [
+            "Advanced Next.js features and API routes",
+            "Payment gateway integration best practices",
+            "Database optimization techniques",
+            "User experience design principles"
+        ],
+        liveUrl: "https://quick-cart-ax1j.vercel.app/",
+        githubUrl: "https://github.com/jubayer17",
+        timeline: "3 months",
+        category: "eCommerce",
+        animationClass: "animate-on-scroll-left",
     },
     {
         title: "Exchango",
