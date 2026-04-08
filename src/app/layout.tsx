@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import MotionLayout from "@/components/ui/MotionLayout";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { resume } from "@/data/resume";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -21,64 +26,40 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jubayer Ahmed - Full Stack Developer Portfolio",
-  description:
-    "Professional portfolio of Jubayer Ahmed - Full Stack Developer specializing in modern web technologies including Next.js, React, Node.js, and MongoDB",
-  keywords:
-    "full stack developer, web developer, react, node.js, javascript, portfolio, next.js, mongodb",
-  authors: [{ name: "Jubayer Ahmed" }],
+  metadataBase: new URL("https://jubayer-ahmed.vercel.app"),
+  title: {
+    default: `${resume.person.name} — ${resume.person.role}`,
+    template: `%s — ${resume.person.name}`,
+  },
+  description: resume.summary.join(" "),
+  authors: [{ name: resume.person.name }],
+  keywords: ["Software Engineer", "Full-Stack", "Next.js", "React", "Node.js", "NestJS", "PostgreSQL", "TypeScript"],
   openGraph: {
-    title: "Jubayer Ahmed - Full Stack Developer Portfolio",
-    description:
-      "Professional portfolio showcasing modern web development projects and skills",
+    title: `${resume.person.name} — ${resume.person.role}`,
+    description: resume.summary.join(" "),
     type: "website",
     url: "https://jubayer-ahmed.vercel.app",
-    images: [
-      {
-        url: "/assets/me.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Jubayer Ahmed - Full Stack Developer",
-      },
-    ],
+    images: [{ url: "/assets/me.jpg", width: 1200, height: 630, alt: `${resume.person.name}` }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Jubayer Ahmed - Full Stack Developer Portfolio",
-    description:
-      "Professional portfolio showcasing modern web development projects and skills",
+    title: `${resume.person.name} — ${resume.person.role}`,
+    description: resume.summary.join(" "),
     images: ["/assets/me.jpg"],
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        />
-        <link
-          rel="icon"
-          type="image/svg+xml"
-          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💻</text></svg>"
-        />
-      </head>
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} font-inter antialiased min-h-screen bg-white text-slate-900 dark:bg-ink-800 dark:text-slate-100`}
       >
-        {children}
+        <ThemeProvider>
+          <Navbar />
+          <MotionLayout>{children}</MotionLayout>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );
