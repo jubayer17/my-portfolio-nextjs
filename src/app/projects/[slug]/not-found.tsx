@@ -2,38 +2,29 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
-      <div className="text-center">
-        <div className="mb-8">
-          <i className="fas fa-search text-6xl text-gray-400 mb-4"></i>
-          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">
-            Project Not Found
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-            The project you&apos;re looking for doesn&apos;t exist or has been
-            moved.
-          </p>
-        </div>
-
-        <div className="space-y-4">
+    <main id="content" className="mx-auto max-w-6xl px-4 py-20">
+      <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-950">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
+          Project not found
+        </h1>
+        <p className="mt-3 text-sm text-slate-600 dark:text-slate-300 md:text-base">
+          The project you’re looking for doesn’t exist or has been moved.
+        </p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:items-center">
           <Link
-            href="/#projects"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-300"
+            href="/projects"
+            className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-slate-900/20 transition hover:-translate-y-0.5 hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
           >
-            <i className="fas fa-arrow-left"></i>
-            Back to Projects
+            Back to projects
           </Link>
-
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            <Link
-              href="/"
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              Or go to homepage
-            </Link>
-          </div>
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm shadow-slate-900/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md hover:shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:hover:border-slate-700"
+          >
+            Home
+          </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
