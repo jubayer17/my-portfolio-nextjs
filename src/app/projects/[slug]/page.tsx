@@ -1,222 +1,149 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  ArrowLeft,
-  ExternalLink,
-  Github,
-  Calendar,
-  User,
-  Clock,
-} from "lucide-react";
-import { projectsData, Project } from "@/data/projects";
+import { ArrowLeft, ExternalLink, Calendar, Tag } from "lucide-react";
+import type { Metadata } from "next";
+import { resume } from "@/data/resume";
 
-export default async function ProjectPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export function generateStaticParams() {
+  return resume.projects.map((p) => ({ slug: p.slug }));
+}
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
   const { slug } = await params;
-  const project = projectsData.find((p: Project) => p.slug === slug);
+  const project = resume.projects.find((p) => p.slug === slug);
+  if (!project) return { title: "Project not found" };
+  return {
+    title: project.title,
+    description: project.description,
+    openGraph: {
+      title: project.title,
+      description: project.description,
+      images: project.images?.[0]?.src ? [{ url: project.images[0].src }] : undefined,
+    },
+  };
+}
+
+export default async function ProjectPage(
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await params;
+  const project = resume.projects.find((p) => p.slug === slug);
 
   if (!project) {
     notFound();
   }
 
   return (
-    <div className="project-details">
-      <div className="container">
-        {/* Header Section */}
-        <div className="project-header">
-          <div className="project-header-content">
-            <Link href="/#projects" className="back-link">
-              <ArrowLeft className="w-5 h-5" />
-              Back to Projects
-            </Link>
+    <main id="content" className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+      <div className="flex flex-col gap-6">
 
-            {project.inDevelopment && (
-              <div className="project-status-badge">
-                <Clock className="w-4 h-4" />
-                In Development
-              </div>
-            )}
+        {/* Back link */}
+        <Link
+          href="/projects"
+          className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-accent-600 dark:text-slate-400 dark:hover:text-accent-400"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to projects
+        </Link>
+
+        {/* Hero card */}
+        <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-7 dark:border-white/[0.07] dark:bg-ink-700 md:p-10">
+          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-accent-500 via-violet-500 to-cyan-400 opacity-70" />
+
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="flex-1">
+              <span className="section-label">
+                <Tag className="h-3 w-3" />
+                {project.category}
+              </span>
+              <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-5xl">
+                {project.title}
+              </h1>
+              <p className="mt-4 max-w-prose text-sm leading-relaxed text-slate-600 dark:text-slate-300 md:text-base">
+                {project.description}
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:border-white/[0.07] dark:bg-white/[0.04] dark:text-slate-400 shrink-0">
+              <Calendar className="h-3 w-3" />
+              {project.range.start} — {project.range.end}
+            </span>
           </div>
 
-          <div className="project-title-section">
-            <h1 className="project-details-title">{project.title}</h1>
-            <p className="project-details-description">
-              {project.detailedDescription || project.description}
-            </p>
-          </div>
-        </div>
-
-        {/* Project Image Section */}
-        <div className="project-image-container">
-          <div className="project-image-wrapper">
-            {project.images?.[0] || project.image ? (
-              <Image
-                src={project.images?.[0] || project.image}
-                alt={project.title}
-                fill
-                className="project-main-image"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-              />
-            ) : (
-              <div className="project-image-placeholder">
-                <span className="placeholder-icon">🚀</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="project-content-grid">
-          {/* Main Content - Features & Details */}
-          <div className="project-main-content">
-            {/* Key Features */}
-            <div className="project-section">
-              <div className="section-header">
-                <div className="section-icon features-icon">
-                  <i className="fas fa-star"></i>
-                </div>
-                <h2 className="section-title">Key Features</h2>
-              </div>
-
-              <div className="features-list">
-                {project.features?.map((feature, index) => (
-                  <div key={index} className="feature-item">
-                    <div className="feature-bullet"></div>
-                    <p className="feature-text">{feature}</p>
-                  </div>
-                )) || (
-                  <>
-                    <div className="feature-item">
-                      <div className="feature-bullet"></div>
-                      <p className="feature-text">
-                        Modern and responsive user interface
-                      </p>
-                    </div>
-                    <div className="feature-item">
-                      <div className="feature-bullet"></div>
-                      <p className="feature-text">
-                        Built with latest technologies and best practices
-                      </p>
-                    </div>
-                    <div className="feature-item">
-                      <div className="feature-bullet"></div>
-                      <p className="feature-text">
-                        Optimized for performance and accessibility
-                      </p>
-                    </div>
-                    <div className="feature-item">
-                      <div className="feature-bullet"></div>
-                      <p className="feature-text">
-                        Clean and maintainable code architecture
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Project Information */}
-            <div className="project-section">
-              <div className="section-header">
-                <div className="section-icon info-icon">
-                  <i className="fas fa-info-circle"></i>
-                </div>
-                <h2 className="section-title">Project Details</h2>
-              </div>
-
-              <div className="project-info-grid">
-                <div className="info-item">
-                  <User className="w-6 h-6 info-item-icon" />
-                  <div className="info-item-content">
-                    <p className="info-label">Project Type</p>
-                    <p className="info-value">Personal Project</p>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <Calendar className="w-6 h-6 info-item-icon" />
-                  <div className="info-item-content">
-                    <p className="info-label">Timeline</p>
-                    <p className="info-value">2024 - Present</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar - Actions & Tech Stack */}
-          <div className="project-sidebar">
-            {/* Quick Actions */}
-            <div className="sidebar-section">
-              <div className="section-header">
-                <div className="section-icon actions-icon">
-                  <i className="fas fa-bolt"></i>
-                </div>
-                <h3 className="sidebar-title">Quick Actions</h3>
-              </div>
-
-              <div className="actions-list">
-                <a
-                  href={project.liveUrl || "#"}
-                  className={`action-btn ${
-                    project.liveUrl && !project.inDevelopment
-                      ? "action-btn-primary"
-                      : "action-btn-disabled"
-                  }`}
-                  target={project.liveUrl ? "_blank" : undefined}
-                  rel={project.liveUrl ? "noopener noreferrer" : undefined}
-                >
-                  <ExternalLink className="w-5 h-5" />
-                  {project.inDevelopment ? "Coming Soon" : "Live Demo"}
-                </a>
-
-                <a
-                  href={project.githubUrl || "#"}
-                  className={`action-btn ${
-                    project.githubUrl
-                      ? "action-btn-secondary"
-                      : "action-btn-disabled"
-                  }`}
-                  target={project.githubUrl ? "_blank" : undefined}
-                  rel={project.githubUrl ? "noopener noreferrer" : undefined}
-                >
-                  <Github className="w-5 h-5" />
-                  View Source
-                </a>
-              </div>
-            </div>
-
-            {/* Tech Stack */}
-            <div className="sidebar-section">
-              <h3 className="sidebar-title">Tech Stack</h3>
-              <div className="tech-stack-list">
-                {project.technologies.map((tech, index) => (
-                  <span key={index} className="tech-tag">
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Project Status */}
-            <div className="sidebar-section">
-              <h3 className="sidebar-title">Status</h3>
-              <div
-                className={`status-indicator ${
-                  project.inDevelopment
-                    ? "status-development"
-                    : "status-completed"
-                }`}
+          {/* Tech stack */}
+          <div className="mt-6 flex flex-wrap gap-2">
+            {project.stack.map((t) => (
+              <span
+                key={t}
+                className="badge-hover rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 dark:border-white/[0.07] dark:bg-white/[0.04] dark:text-slate-300"
               >
-                {project.inDevelopment ? "🚧 In Development" : "✅ Completed"}
-              </div>
-            </div>
+                {t}
+              </span>
+            ))}
+          </div>
+
+          {/* Links */}
+          <div className="mt-7 flex flex-wrap gap-3">
+            {project.links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm"
+              >
+                <ExternalLink className="h-4 w-4" />
+                {l.label}
+              </a>
+            ))}
           </div>
         </div>
+
+        {/* Image + bullets */}
+        {project.images?.length ? (
+          <section className="grid gap-5 md:grid-cols-12">
+            <div className="md:col-span-8">
+              <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/[0.07] dark:bg-ink-600">
+                <Image
+                  src={project.images[0].src}
+                  alt={project.images[0].alt}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 720px"
+                  priority
+                />
+              </div>
+            </div>
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-7 dark:border-white/[0.07] dark:bg-ink-700 md:col-span-4">
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-violet-500 to-accent-500 opacity-60" />
+              <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">What I built</h2>
+              <ul className="mt-5 space-y-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                {project.bullets.map((b) => (
+                  <li key={b} className="flex gap-3">
+                    <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent-400" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        ) : (
+          <section className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-7 dark:border-white/[0.07] dark:bg-ink-700 md:p-10">
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-violet-500 to-accent-500 opacity-60" />
+            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">What I built</h2>
+            <ul className="mt-5 space-y-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+              {project.bullets.map((b) => (
+                <li key={b} className="flex gap-3">
+                  <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent-400" />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
-    </div>
+    </main>
   );
 }
