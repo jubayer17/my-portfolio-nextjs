@@ -28,7 +28,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   useEffect(() => {
     setMounted(true);
 
-    // Check for saved theme preference or default to system preference
     const savedTheme = localStorage.getItem("theme");
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)"
@@ -37,7 +36,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     const shouldBeDark = savedTheme === "dark" || (!savedTheme && prefersDark);
     setDarkMode(shouldBeDark);
 
-    // Apply theme to document
     if (shouldBeDark) {
       document.documentElement.classList.add("dark");
       document.documentElement.setAttribute("data-theme", "dark");
@@ -48,6 +46,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   }, []);
 
   const toggleDarkMode = () => {
+    if (!mounted) return;
     const newMode = !darkMode;
     setDarkMode(newMode);
     localStorage.setItem("theme", newMode ? "dark" : "light");
@@ -60,11 +59,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       document.documentElement.setAttribute("data-theme", "light");
     }
   };
-
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return null;
-  }
 
   const value = {
     darkMode,
