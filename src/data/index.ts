@@ -18,3 +18,5 @@ export * from './navigation';
 
 // Hero data
 export * from './hero';
+
+export * from "./resume";
