@@ -8,133 +8,112 @@ export default function ContactForm() {
   const [name,    setName]    = useState("");
   const [email,   setEmail]   = useState("");
   const [message, setMessage] = useState("");
-  const [copied,  setCopied]  = useState<"email" | "message" | null>(null);
+  const [copied,  setCopied]  = useState<"email" | "msg" | null>(null);
 
   const mailto = useMemo(() => {
     const subject = `Portfolio inquiry — ${name || "Hello"}`;
-    const body = [
-      `Name: ${name || "-"}`,
-      `Email: ${email || "-"}`,
-      "",
-      message || "-",
-    ].join("\n");
+    const body = `Name: ${name || "-"}\nEmail: ${email || "-"}\n\n${message || "-"}`;
     return `mailto:${resume.person.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  }, [email, message, name]);
+  }, [name, email, message]);
 
-  const copyText = async (type: "email" | "message") => {
+  const copy = async (type: "email" | "msg") => {
     try {
       await navigator.clipboard.writeText(type === "email" ? resume.person.email : message);
       setCopied(type);
-      window.setTimeout(() => setCopied(null), 1800);
-    } catch {
-      setCopied(null);
-    }
+      setTimeout(() => setCopied(null), 2000);
+    } catch { /* ignore */ }
   };
 
-  const disabled = message.trim().length === 0;
-
-  const inputClass =
-    "h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition focus:border-accent-400 focus:bg-white focus:ring-2 focus:ring-accent-500/15 dark:border-white/[0.07] dark:bg-white/[0.04] dark:text-white dark:focus:border-accent-500/50 dark:focus:bg-white/[0.07] dark:focus:ring-accent-500/10";
+  const empty = !message.trim();
 
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!disabled) window.location.href = mailto;
-      }}
+      onSubmit={(e) => { e.preventDefault(); if (!empty) window.location.href = mailto; }}
       className="space-y-4"
     >
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300" htmlFor="contact-name">
-            Name
-          </label>
-          <input
-            id="contact-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
-            className={inputClass}
-            autoComplete="name"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300" htmlFor="contact-email">
-            Email
-          </label>
-          <input
-            id="contact-email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            className={inputClass}
-            autoComplete="email"
-            inputMode="email"
-          />
-        </div>
+        {[
+          { id: "c-name",  label: "Name",  val: name,  set: setName,  type: "text",  ac: "name",  ph: "Your name" },
+          { id: "c-email", label: "Email", val: email, set: setEmail, type: "email", ac: "email", ph: "you@example.com" },
+        ].map((f) => (
+          <div key={f.id} className="space-y-1.5">
+            <label
+              htmlFor={f.id}
+              className="block text-sm font-semibold"
+              style={{ color: "var(--fg-2)" }}
+            >
+              {f.label}
+            </label>
+            <input
+              id={f.id}
+              type={f.type}
+              value={f.val}
+              onChange={(e) => f.set(e.target.value)}
+              placeholder={f.ph}
+              autoComplete={f.ac}
+              className="field h-11"
+            />
+          </div>
+        ))}
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300" htmlFor="contact-message">
+      <div className="space-y-1.5">
+        <label
+          htmlFor="c-msg"
+          className="block text-sm font-semibold"
+          style={{ color: "var(--fg-2)" }}
+        >
           Message{" "}
-          <span className="font-normal text-slate-400 dark:text-slate-500">(required)</span>
+          <span className="font-normal" style={{ color: "var(--fg-4)" }}>(required)</span>
         </label>
         <textarea
-          id="contact-message"
+          id="c-msg"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={6}
           required
           placeholder="Tell me about your project or opportunity..."
-          className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-accent-400 focus:bg-white focus:ring-2 focus:ring-accent-500/15 dark:border-white/[0.07] dark:bg-white/[0.04] dark:text-white dark:placeholder-slate-600 dark:focus:border-accent-500/50 dark:focus:bg-white/[0.07] dark:focus:ring-accent-500/10"
+          className="field resize-y"
         />
       </div>
 
       <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:flex-wrap">
         <button
           type="submit"
-          disabled={disabled}
-          className={[
-            "inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold shadow-sm transition",
-            disabled
-              ? "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-white/[0.04] dark:text-slate-600"
-              : "btn-primary",
-          ].join(" ")}
+          disabled={empty}
+          className={`btn py-2.5 w-full sm:w-auto ${empty ? "opacity-40" : "btn-primary"}`}
+          style={empty ? { background: "var(--surface-3)", color: "var(--fg-4)", border: "1px solid var(--border)" } : {}}
         >
           <Send className="h-4 w-4" />
           Open email client
         </button>
 
-        <a
-          href={mailto}
-          className="btn-ghost inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm"
-        >
+        <a href={mailto} className="btn btn-ghost py-2.5 w-full sm:w-auto">
           <Mail className="h-4 w-4" />
           Preview mail
         </a>
 
         <button
           type="button"
-          onClick={() => copyText("email")}
-          className="btn-ghost inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm"
+          onClick={() => copy("email")}
+          className="btn btn-ghost py-2.5 w-full sm:w-auto"
         >
-          {copied === "email" ? <CheckCheck className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+          {copied === "email"
+            ? <CheckCheck className="h-4 w-4" style={{ color: "var(--success)" }} />
+            : <Copy className="h-4 w-4" />}
           {copied === "email" ? "Copied!" : "Copy email"}
         </button>
 
         <button
           type="button"
-          onClick={() => copyText("message")}
-          disabled={disabled}
-          className={[
-            "inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition",
-            disabled
-              ? "cursor-not-allowed border border-slate-200 bg-slate-50 text-slate-400 dark:border-white/[0.07] dark:bg-white/[0.02] dark:text-slate-600"
-              : "btn-ghost",
-          ].join(" ")}
+          onClick={() => copy("msg")}
+          disabled={empty}
+          className={`btn btn-ghost py-2.5 w-full sm:w-auto ${empty ? "opacity-40" : ""}`}
         >
-          {copied === "message" ? <CheckCheck className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-          {copied === "message" ? "Copied!" : "Copy message"}
+          {copied === "msg"
+            ? <CheckCheck className="h-4 w-4" style={{ color: "var(--success)" }} />
+            : <Copy className="h-4 w-4" />}
+          {copied === "msg" ? "Copied!" : "Copy message"}
         </button>
       </div>
     </form>
