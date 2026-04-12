@@ -40,7 +40,7 @@ export default function ProjectSlider({ images, title }: ProjectSliderProps) {
   if (images.length === 0) {
     return (
       <div className="project-slider-placeholder">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg h-96 flex items-center justify-center">
+        <div className="rounded-lg h-96 flex items-center justify-center" style={{ background: "var(--accent)" }}>
           <i className="fas fa-image text-6xl text-white opacity-50"></i>
         </div>
       </div>
@@ -53,7 +53,7 @@ export default function ProjectSlider({ images, title }: ProjectSliderProps) {
         {/* Main Image */}
         <div className="relative h-96 md:h-[500px] overflow-hidden">
           {images[currentIndex].includes("code-icon.png") ? (
-            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center" style={{ background: "var(--accent)" }}>
               <div className="text-center text-white">
                 <i className="fas fa-code text-6xl mb-4"></i>
                 <h3 className="text-2xl font-bold">Coming Soon</h3>
@@ -106,15 +106,14 @@ export default function ProjectSlider({ images, title }: ProjectSliderProps) {
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`relative w-16 h-12 rounded-md overflow-hidden border-2 transition-all duration-300 ${
-                  index === currentIndex
+                className={`relative w-16 h-12 rounded-md overflow-hidden border-2 transition-all duration-300 ${index === currentIndex
                     ? "border-blue-500 scale-110"
                     : "border-gray-300 dark:border-gray-600 hover:border-blue-400"
-                }`}
+                  }`}
                 aria-label={`Go to image ${index + 1}`}
               >
                 {image.includes("code-icon.png") ? (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <div className="w-full h-full flex items-center justify-center" style={{ background: "var(--accent)" }}>
                     <i className="fas fa-code text-white text-xs"></i>
                   </div>
                 ) : (
