@@ -1,26 +1,32 @@
 import type { Metadata } from "next";
-import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import MotionLayout from "@/components/ui/MotionLayout";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { resume } from "@/data/resume";
+import ClientEffects from "@/components/ClientEffects";
+import IntroManager from "@/components/IntroManager";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const outfit = Outfit({
+// Space Grotesk — geometric display / heading font
+const spaceGrotesk = Space_Grotesk({
   variable: "--font-outfit",
   subsets: ["latin"],
   display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+// Plus Jakarta Sans — modern humanist body font
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+  variable: "--font-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -33,13 +39,16 @@ export const metadata: Metadata = {
   },
   description: resume.summary.join(" "),
   authors: [{ name: resume.person.name }],
-  keywords: ["Software Engineer", "Full-Stack", "Next.js", "React", "Node.js", "NestJS", "PostgreSQL", "TypeScript"],
+  keywords: [
+    "Software Engineer", "Full-Stack", "Next.js", "React",
+    "Node.js", "NestJS", "PostgreSQL", "TypeScript",
+  ],
   openGraph: {
     title: `${resume.person.name} — ${resume.person.role}`,
     description: resume.summary.join(" "),
     type: "website",
     url: "https://jubayer-ahmed.vercel.app",
-    images: [{ url: "/assets/me.jpg", width: 1200, height: 630, alt: `${resume.person.name}` }],
+    images: [{ url: "/assets/me.jpg", width: 1200, height: 630, alt: resume.person.name }],
   },
   twitter: {
     card: "summary_large_image",
@@ -53,9 +62,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} font-inter antialiased min-h-screen bg-white text-slate-900 dark:bg-ink-800 dark:text-slate-100`}
+        className={`${spaceGrotesk.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} font-inter antialiased min-h-screen`}
       >
         <ThemeProvider>
+          <IntroManager />
+          <ClientEffects />
           <Navbar />
           <MotionLayout>{children}</MotionLayout>
           <Footer />
