@@ -20,8 +20,26 @@ export default function TypewriterText({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [phase, setPhase] = useState<"typing" | "pausing" | "deleting">("typing");
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    const onVisibilityChange = () => {
+      setIsVisible(document.visibilityState === "visible");
+    };
+
+    onVisibilityChange();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) {
+      return;
+    }
+
     const current = texts[currentIndex];
 
     if (phase === "typing") {
@@ -54,13 +72,14 @@ export default function TypewriterText({
         setPhase("typing");
       }
     }
-  }, [displayText, phase, currentIndex, texts, speed, deleteSpeed, pauseDuration]);
+  }, [displayText, phase, currentIndex, texts, speed, deleteSpeed, pauseDuration, isVisible]);
 
   return (
     <span className={className}>
       {displayText}
       <span
-        className="cursor-blink ml-[2px] inline-block h-[0.85em] w-[2px] translate-y-[1px] rounded-sm bg-current align-middle"
+        className="cursor-blink ml-[2px] inline-block h-[0.85em] w-[2px] translate-y-[1px] rounded-sm align-middle"
+        style={{ background: "var(--accent)" }}
         aria-hidden="true"
       />
     </span>
