@@ -20,7 +20,7 @@ export const heroButtons = {
     secondary: {
         text: "Download Resume",
         icon: "fas fa-download",
-        href: "/assets/Resume_of_Jubayer_Ahmed.pdf",
+        href: "https://drive.google.com/file/d/1s0EK09EbHgSxA3riuC0QMWzyA32wNedC/view?usp=sharing",
     },
 };
 
