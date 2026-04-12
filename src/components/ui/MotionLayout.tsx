@@ -1,23 +1,41 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useLayoutEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import gsap from "gsap";
 
 export default function MotionLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const reduceMotion = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
 
-  return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        initial={reduceMotion ? false : { opacity: 0, y: 14, filter: "blur(6px)" }}
-        animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)" }}
-        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -10, filter: "blur(6px)" }}
-        transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
-  );
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      gsap.set(element, { clearProps: "all", autoAlpha: 1 });
+      return;
+    }
+
+    // Snappy page-entry — fast enough to feel instant, subtle enough to feel smooth
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        element,
+        { autoAlpha: 0, y: 14, filter: "blur(3px)" },
+        {
+          autoAlpha: 1,
+          y: 0,
+          filter: "blur(0px)",
+          duration: 0.28,
+          ease: "power2.out",
+          overwrite: "auto",
+          clearProps: "filter,transform",
+        }
+      );
+    }, element);
+
+    return () => ctx.revert();
+  }, [pathname]);
+
+  return <div ref={ref} id="page-content">{children}</div>;
 }
