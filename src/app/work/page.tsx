@@ -9,7 +9,7 @@ export default function WorkPage() {
   const totalHighlights = resume.experience.reduce((count, item) => count + item.highlights.length, 0);
 
   return (
-    <main id="content" className="mx-auto max-w-6xl px-4 py-14 md:px-6 md:py-20">
+    <main id="content" className="mx-auto max-w-6xl px-6 py-14 md:px-6 md:py-20">
 
       {/* ── Header ── */}
       <AnimatedSection>
