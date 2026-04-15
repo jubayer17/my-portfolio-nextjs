@@ -78,7 +78,7 @@ export const resume = {
             location: "Mirpur, Dhaka",
             range: { start: "Feb 2025", end: "Present" },
             highlights: [
-                "Designed and delivered 75+ production APIs using NestJS, Prisma/TypeORM, and PostgreSQL with scalable architecture patterns.",
+                "Designed and delivered 40+ production APIs using NestJS, Prisma/TypeORM, and PostgreSQL with scalable architecture patterns.",
                 "Built internal tooling and admin experiences with Next.js and GraphQL to streamline operations and reduce manual overhead.",
                 "Improved platform features with authentication, authorization, role-based access control, and performance optimizations.",
                 "Contributed to end-to-end backend architecture for a restaurant management system (orders, inventory, API structure).",
@@ -130,6 +130,7 @@ export const resume = {
             links: [
                 { label: "Live", href: "https://restro-core-frontend.vercel.app/" },
             ],
+            images: [{ src: "/assets/restroCore-SS.png", alt: "RestroCore platform screenshot" }],
         },
         {
             slug: "job-board",
@@ -161,6 +162,7 @@ export const resume = {
             links: [
                 { label: "Live", href: "https://job-board-client-six.vercel.app/" },
             ],
+            images: [{ src: "/assets/Job-Board-SS.png", alt: "Job Board platform screenshot" }],
         },
         {
             slug: "geek-estates",
