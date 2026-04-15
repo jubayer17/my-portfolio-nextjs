@@ -45,8 +45,8 @@ export default function ContactPage() {
               </p>
               <div className="mt-5 space-y-4">
                 {[
-                  { icon: Mail,   label: "Email",    content: resume.person.email, href: `mailto:${resume.person.email}` },
-                  { icon: Phone,  label: "Phone",    content: resume.person.phone  },
+                  { icon: Mail, label: "Email", content: resume.person.email, href: `mailto:${resume.person.email}` },
+                  { icon: Phone, label: "Phone", content: resume.person.phone },
                   { icon: MapPin, label: "Location", content: resume.person.location },
                 ].map(({ icon: Icon, label, content, href }) => (
                   <div key={label} className="flex items-center gap-3">
