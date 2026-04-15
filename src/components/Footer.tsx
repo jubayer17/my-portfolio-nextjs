@@ -18,7 +18,7 @@ export default function Footer() {
         }}
       />
 
-      <div className="mx-auto max-w-6xl px-4 py-12 md:px-6 md:py-16">
+      <div className="mx-auto max-w-6xl px-6 py-12 md:px-6 md:py-16">
         <div className="grid gap-10 md:grid-cols-12 md:items-start">
 
           {/* Brand */}
