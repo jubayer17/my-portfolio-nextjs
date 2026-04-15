@@ -35,7 +35,7 @@ export default async function ProjectPage(
   if (!project) notFound();
 
   return (
-    <main id="content" className="mx-auto max-w-6xl px-4 py-14 md:px-6 md:py-20" data-gsap="stagger">
+    <main id="content" className="mx-auto max-w-6xl px-6 py-14 md:px-6 md:py-20" data-gsap="stagger">
       <div className="flex flex-col gap-6" data-gsap-child>
 
         {/* Back */}
