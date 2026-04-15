@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useState } from "react";
 import {
   ArrowRight, Download, ExternalLink,
@@ -9,7 +9,7 @@ import {
   Trophy, Terminal,
 } from "lucide-react";
 import { LazyMotion, domAnimation, m, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
-import Image from "next/image";
+
 import SocialLinks from "@/components/ui/SocialLinks";
 import TypewriterText from "@/components/ui/TypewriterText";
 import TechBadge from "@/components/ui/TechBadge";
@@ -65,7 +65,6 @@ const SKILL_CARD_TONES = [
 ] as const;
 
 export default function HomePage() {
-  const router = useRouter();
   const reduceMotion = useReducedMotion();
   const featured = resume.projects.slice(0, 10);
   const currentExperience = resume.experience[0];
@@ -488,7 +487,6 @@ export default function HomePage() {
           >
             {featured.map((p, idx) => {
               const liveLink = p.links.find((link) => link.label === "Live");
-              const repoLink = p.links.find((link) => link.label === "GitHub");
               const isHovered = hoveredProject?.slug === p.slug;
               const isFrontendOnly = p.slug === "restrocore";
 
@@ -514,7 +512,7 @@ export default function HomePage() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        liveLink && window.open(liveLink.href, '_blank');
+                        if (liveLink) window.open(liveLink.href, '_blank');
                       }
                     }}
                   >
@@ -802,9 +800,11 @@ export default function HomePage() {
 
               {hoveredProjectImage ? (
                 <div className="relative overflow-hidden">
-                  <img
+                  <Image
                     src={hoveredProjectImage.src}
                     alt={hoveredProjectImage.alt}
+                    width={800}
+                    height={500}
                     className="block w-full h-auto object-contain"
                     style={{ filter: "brightness(1.06) contrast(1.05) saturate(1.03)" }}
                   />
