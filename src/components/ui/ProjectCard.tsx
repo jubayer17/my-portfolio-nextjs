@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import TechTag from "./TechTag";
 
 interface ProjectCardProps {
@@ -15,7 +14,6 @@ interface ProjectCardProps {
   githubUrl?: string;
   inDevelopment?: boolean;
   animationClass?: string;
-  slug?: string;
 }
 
 export default function ProjectCard({
@@ -29,7 +27,6 @@ export default function ProjectCard({
   githubUrl,
   inDevelopment,
   animationClass = "",
-  slug,
 }: ProjectCardProps) {
   return (
     <div className={`project-card ${animationClass} hover-lift magnetic-card`}>
@@ -52,9 +49,8 @@ export default function ProjectCard({
             {liveUrl && (
               <a
                 href={liveUrl === "#" ? undefined : liveUrl}
-                className={`project-link hover-scale ${
-                  liveUrl === "#" ? "project-link-disabled" : ""
-                }`}
+                className={`project-link hover-scale ${liveUrl === "#" ? "project-link-disabled" : ""
+                  }`}
                 aria-label="View live demo"
                 target={liveUrl === "#" ? undefined : "_blank"}
                 rel={liveUrl === "#" ? undefined : "noopener noreferrer"}
@@ -91,12 +87,20 @@ export default function ProjectCard({
             <TechTag key={index} technology={tech} />
           ))}
         </div>
-        <Link
-          href={slug ? `/projects/${slug}` : "#"}
-          className="view-details-btn"
-        >
-          View Details <i className="fas fa-arrow-right"></i>
-        </Link>
+        {liveUrl && liveUrl !== "#" ? (
+          <a
+            href={liveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="view-details-btn"
+          >
+            View Project <i className="fas fa-arrow-right"></i>
+          </a>
+        ) : (
+          <button className="view-details-btn" disabled>
+            Coming Soon <i className="fas fa-arrow-right"></i>
+          </button>
+        )}
       </div>
     </div>
   );
