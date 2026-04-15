@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main id="content" className="mx-auto max-w-6xl px-4 py-20">
+    <main id="content" className="mx-auto max-w-6xl px-6 py-20">
       <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-950">
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
           Page not found
