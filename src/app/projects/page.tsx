@@ -7,7 +7,7 @@ export const metadata = { title: "Projects" };
 
 export default function ProjectsPage() {
   return (
-    <main id="content" className="mx-auto max-w-6xl px-4 py-14 md:px-6 md:py-20">
+    <main id="content" className="mx-auto max-w-6xl px-6 py-14 md:px-6 md:py-20">
 
       <AnimatedSection>
         <span className="chip">
