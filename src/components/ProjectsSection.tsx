@@ -57,7 +57,6 @@ export default function ProjectsSection() {
                     githubUrl={project.githubUrl}
                     inDevelopment={project.inDevelopment}
                     animationClass={project.animationClass}
-                    slug={project.slug}
                   />
                 </div>
               ))}
