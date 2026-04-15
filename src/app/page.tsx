@@ -56,12 +56,12 @@ const ROLE_KPIS = [
 
 // One tone per card — Languages, Frontend, Backend, Databases, DevOps, Tools & Others
 const SKILL_CARD_TONES = [
-  { accent: "#a78bfa",  soft: "rgba(167,139,250,0.12)", glow: "rgba(167,139,250,0.2)" },  // Languages  — violet
-  { accent: "#38bdf8",  soft: "rgba(56,189,248,0.12)",  glow: "rgba(56,189,248,0.2)"  },  // Frontend   — sky blue
-  { accent: "#f97316",  soft: "rgba(249,115,22,0.12)",  glow: "rgba(249,115,22,0.2)"  },  // Backend    — orange
-  { accent: "#60a5fa",  soft: "rgba(96,165,250,0.12)",  glow: "rgba(96,165,250,0.2)"  },  // Databases  — blue
-  { accent: "#f43f5e",  soft: "rgba(244,63,94,0.12)",   glow: "rgba(244,63,94,0.2)"   },  // DevOps     — rose
-  { accent: "#fbbf24",  soft: "rgba(251,191,36,0.12)",  glow: "rgba(251,191,36,0.2)"  },  // Tools      — amber
+  { accent: "#a78bfa", soft: "rgba(167,139,250,0.12)", glow: "rgba(167,139,250,0.2)" },  // Languages  — violet
+  { accent: "#38bdf8", soft: "rgba(56,189,248,0.12)", glow: "rgba(56,189,248,0.2)" },  // Frontend   — sky blue
+  { accent: "#f97316", soft: "rgba(249,115,22,0.12)", glow: "rgba(249,115,22,0.2)" },  // Backend    — orange
+  { accent: "#60a5fa", soft: "rgba(96,165,250,0.12)", glow: "rgba(96,165,250,0.2)" },  // Databases  — blue
+  { accent: "#f43f5e", soft: "rgba(244,63,94,0.12)", glow: "rgba(244,63,94,0.2)" },  // DevOps     — rose
+  { accent: "#fbbf24", soft: "rgba(251,191,36,0.12)", glow: "rgba(251,191,36,0.2)" },  // Tools      — amber
 ] as const;
 
 export default function HomePage() {
@@ -73,11 +73,24 @@ export default function HomePage() {
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const hoveredProject = featured.find((p) => p.slug === hoveredSlug);
+  const fallbackImages: Record<string, { src: string; alt: string }> = {
+    restrocore: {
+      src: "/assets/restroCore-SS.png",
+      alt: "RestroCore platform screenshot",
+    },
+    "job-board": {
+      src: "/assets/Job-Board-SS.png",
+      alt: "Job Board platform screenshot",
+    },
+  };
+  const hoveredProjectImage = hoveredProject
+    ? hoveredProject.images?.[0] ?? fallbackImages[hoveredProject.slug]
+    : undefined;
 
   const updateHoverPosition = (clientX: number, clientY: number) => {
     const padding = 24;
     const popupWidth = Math.min(520, window.innerWidth * 0.48);
-    const popupHeight = 420;
+    const popupHeight = Math.min(820, window.innerHeight * 0.86);
     const nextX = Math.min(clientX + padding, window.innerWidth - popupWidth - padding);
     const nextY = Math.min(Math.max(clientY - 140, padding), window.innerHeight - popupHeight - padding);
 
@@ -89,7 +102,7 @@ export default function HomePage() {
 
   return (
     <LazyMotion features={domAnimation}>
-      <main id="content" className="mx-auto max-w-6xl px-4 md:px-6">
+      <main id="content" className="mx-auto max-w-6xl px-6 md:px-6">
 
         {/* HERO */}
         <section className="relative py-8 md:py-10 lg:py-12" data-gsap="reveal" data-gsap-y="30">
@@ -325,7 +338,7 @@ export default function HomePage() {
         />
 
         {/* 01 - SKILLS */}
-        <section className="relative py-16 md:py-24" data-gsap="reveal">
+        <section className="relative overflow-hidden py-16 md:py-24" data-gsap="reveal">
           <span className="section-num" data-gsap="parallax" data-gsap-speed="10">01</span>
 
           <m.div
@@ -434,7 +447,7 @@ export default function HomePage() {
 
         {/* 02 - FEATURED PROJECTS */}
         <section
-          className="relative py-16 md:py-24"
+          className="relative overflow-hidden py-16 md:py-24"
           data-gsap="reveal"
         >
           <span className="section-num" data-gsap="parallax" data-gsap-speed="12">02</span>
@@ -495,18 +508,18 @@ export default function HomePage() {
                     }}
                     onMouseMove={(e) => updateHoverPosition(e.clientX, e.clientY)}
                     onMouseLeave={() => setHoveredSlug(null)}
-                    onClick={() => router.push(`/projects/${p.slug}`)}
+                    onClick={() => liveLink && window.open(liveLink.href, '_blank')}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        router.push(`/projects/${p.slug}`);
+                        liveLink && window.open(liveLink.href, '_blank');
                       }
                     }}
                   >
                     <article
-                      className="relative grid w-full gap-3 border-l-2 px-3 py-4 transition-all duration-250 sm:px-4 sm:py-5 md:grid-cols-[72px_1fr_auto] md:items-center md:gap-4 md:px-6"
+                      className="relative flex flex-col gap-0 border-l-2 px-4 py-4 transition-all duration-250 sm:py-5 md:grid md:grid-cols-[72px_1fr_auto] md:items-center md:gap-4 md:px-6"
                       style={{
                         borderBottom: idx < featured.length - 1 ? "1px solid var(--border)" : undefined,
                         borderLeftColor: isFrontendOnly
@@ -518,27 +531,34 @@ export default function HomePage() {
                         boxShadow: isFrontendOnly ? "inset 1px 0 0 0 #f59e0b" : undefined,
                       }}
                     >
+                      {/* Index — desktop only */}
                       <div className="hidden font-mono text-xs font-bold uppercase tracking-[0.14em] md:block" style={{ color: isHovered ? "var(--accent)" : isFrontendOnly ? "#f59e0b" : "var(--fg-4)" }}>
                         {String(idx + 1).padStart(2, "0")}
                       </div>
 
+                      {/* Content */}
                       <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                        {/* Title + meta */}
+                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                           <h3
-                            className="font-outfit truncate text-lg font-extrabold tracking-tight transition-colors"
+                            className="font-outfit line-clamp-1 text-base font-extrabold tracking-tight transition-colors sm:text-lg"
                             style={{ color: isHovered ? "var(--accent-text)" : "var(--fg)" }}
                           >
                             {p.title}
                           </h3>
-                          <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--fg-4)" }}>
+                          <span className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--fg-4)" }}>
                             {p.category}
                           </span>
-                          <span className="text-[11px] font-medium" style={{ color: "var(--fg-4)" }}>
-                            {p.range.start} - {p.range.end}
+                          <span className="text-[10px] font-medium" style={{ color: "var(--fg-4)" }}>
+                            {p.range.start} – {p.range.end}
                           </span>
-                          {isFrontendOnly && (
+                        </div>
+
+                        {/* Frontend-only badge — own row so it never crowds title */}
+                        {isFrontendOnly && (
+                          <div className="mt-1.5">
                             <span
-                              className="flex items-center gap-1 border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                              className="inline-flex items-center gap-1 border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
                               style={{ color: "#f59e0b", borderColor: "rgba(245,158,11,0.35)", background: "rgba(245,158,11,0.08)" }}
                             >
                               <m.span
@@ -549,24 +569,57 @@ export default function HomePage() {
                               />
                               Frontend only · Backend ongoing
                             </span>
-                          )}
-                        </div>
+                          </div>
+                        )}
 
-                        <p className="mt-2 line-clamp-2 text-sm" style={{ color: "var(--fg-3)" }}>
+                        {/* Description */}
+                        <p className="mt-1.5 line-clamp-2 text-sm" style={{ color: "var(--fg-3)" }}>
                           {p.description}
                         </p>
 
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                          {p.stack.slice(0, 6).map((t) => (
+                        {/* Stack — 3 on mobile, 5 on desktop */}
+                        <div className="mt-2.5 flex flex-wrap gap-1.5">
+                          {p.stack.slice(0, 3).map((t) => (
                             <TechBadge key={t} name={t} />
                           ))}
-                          {p.stack.length > 6 && (
-                            <span className="tag">+{p.stack.length - 6}</span>
+                          {p.stack.slice(3, 5).map((t) => (
+                            <span key={t} className="hidden sm:inline-flex"><TechBadge name={t} /></span>
+                          ))}
+                          {p.stack.length > 3 && (
+                            <span className="tag sm:hidden">+{p.stack.length - 3}</span>
                           )}
+                          {p.stack.length > 5 && (
+                            <span className="tag hidden sm:inline-flex">+{p.stack.length - 5}</span>
+                          )}
+                        </div>
+
+                        {/* Actions — mobile only, inline at bottom */}
+                        <div className="mt-3 flex items-center gap-2 md:hidden">
+                          {liveLink && (
+                            <a
+                              href={liveLink.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 border px-2.5 py-1.5 text-xs font-semibold transition-colors hover:text-[var(--accent-text)]"
+                              style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Live
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
+                          <span
+                            className="ml-auto flex items-center gap-1 text-xs font-medium"
+                            style={{ color: "var(--fg-4)" }}
+                          >
+                            View case study
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </span>
                         </div>
                       </div>
 
-                      <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs" style={{ color: "var(--fg-3)" }}>
+                      {/* Actions column — desktop only */}
+                      <div className="hidden shrink-0 flex-wrap items-center gap-2 text-xs md:flex" style={{ color: "var(--fg-3)" }}>
                         {liveLink && (
                           <a
                             href={liveLink.href}
@@ -577,19 +630,6 @@ export default function HomePage() {
                             onClick={(e) => e.stopPropagation()}
                           >
                             Live
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                        {repoLink && (
-                          <a
-                            href={repoLink.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 border px-2.5 py-1.5 font-semibold transition-colors hover:text-[var(--accent-text)]"
-                            style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            GitHub
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         )}
@@ -609,7 +649,7 @@ export default function HomePage() {
         />
 
         {/* 03 - ACHIEVEMENTS */}
-        <section className="relative py-16 md:py-24" data-gsap="reveal">
+        <section className="relative overflow-hidden py-16 md:py-24" data-gsap="reveal">
           <span className="section-num" data-gsap="parallax" data-gsap-speed="14">03</span>
 
           <m.div
@@ -674,7 +714,7 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="noise relative overflow-hidden rounded-3xl px-8 py-14 md:px-14 md:py-16"
+            className="noise relative overflow-hidden rounded-3xl px-5 py-10 sm:px-8 sm:py-14 md:px-14 md:py-16"
             style={{
               background: "var(--surface-2)",
               border: "1px solid rgba(124,58,237,0.15)",
@@ -750,6 +790,7 @@ export default function HomePage() {
               className="relative overflow-hidden"
               style={{
                 background: "var(--surface)",
+                maxHeight: "86vh",
                 boxShadow: "0 0 0 1px rgba(124,58,237,0.3), 0 0 0 2px rgba(124,58,237,0.08), 0 32px 80px rgba(0,0,0,0.75), 0 0 70px rgba(124,58,237,0.18)",
               }}
             >
@@ -759,20 +800,16 @@ export default function HomePage() {
                 style={{ background: "linear-gradient(90deg, var(--accent) 0%, var(--cyan) 60%, transparent 100%)" }}
               />
 
-              {hoveredProject.images?.[0] ? (
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image
-                    src={hoveredProject.images[0].src}
-                    alt={hoveredProject.images[0].alt}
-                    fill
-                    className="object-cover"
-                    sizes="480px"
-                    style={{ transform: "scale(1.04)" }}
+              {hoveredProjectImage ? (
+                <div className="relative overflow-hidden">
+                  <img
+                    src={hoveredProjectImage.src}
+                    alt={hoveredProjectImage.alt}
+                    className="block w-full h-auto object-contain"
+                    style={{ filter: "brightness(1.06) contrast(1.05) saturate(1.03)" }}
                   />
-                  {/* Deep cinematic gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/10" />
-                  {/* Side vignette */}
-                  <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.4) 100%)" }} />
+                  {/* Soft readability gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/38 via-black/4 to-transparent" />
 
                   {/* Bottom info strip */}
                   <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 px-4 pb-4 pt-8">
