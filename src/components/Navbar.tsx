@@ -1,10 +1,9 @@
 "use client";
 
-import { Dialog } from "@headlessui/react";
 import { Download, Menu, Moon, Sun, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { resume } from "@/data/resume";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -21,6 +20,7 @@ export default function Navbar() {
   const { darkMode, toggleDarkMode } = useTheme();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 16);
@@ -28,6 +28,20 @@ export default function Navbar() {
     fn();
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  // Close on route change
+  useEffect(() => { setOpen(false); }, [pathname]);
 
   return (
     <>
@@ -55,15 +69,13 @@ export default function Navbar() {
             : {}
         }
       >
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 md:px-6">
 
           {/* ── Logo ── */}
           <Link href="/" className="group flex items-center gap-2.5">
             <span
               className="relative inline-flex h-8 w-8 items-center justify-center rounded-xl text-[11px] font-black text-white overflow-hidden"
-              style={{
-                background: "var(--accent)",
-              }}
+              style={{ background: "var(--accent)" }}
             >
               JA
             </span>
@@ -99,9 +111,7 @@ export default function Navbar() {
                     <motion.span
                       layoutId="nav-pill"
                       className="absolute inset-x-4 bottom-0 h-[2px] rounded-full"
-                      style={{
-                        background: "var(--accent)",
-                      }}
+                      style={{ background: "var(--accent)" }}
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
                   )}
@@ -144,64 +154,43 @@ export default function Navbar() {
               </AnimatePresence>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              aria-label="Open navigation menu"
-              className="btn btn-ghost h-8 w-8 px-0 rounded-lg md:hidden"
-            >
-              <Menu className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </header>
+            {/* ── Mobile dropdown ── */}
+            <div ref={dropdownRef} className="relative md:hidden">
+              <button
+                type="button"
+                onClick={() => setOpen((prev) => !prev)}
+                aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={open}
+                className="btn btn-ghost h-8 w-8 px-0 rounded-lg"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={open ? "x" : "menu"}
+                    initial={{ rotate: -45, opacity: 0, scale: 0.7 }}
+                    animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                    exit={{ rotate: 45, opacity: 0, scale: 0.7 }}
+                    transition={{ duration: 0.18 }}
+                    className="flex items-center"
+                  >
+                    {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                  </motion.span>
+                </AnimatePresence>
+              </button>
 
-      {/* ── Mobile drawer ── */}
-      <Dialog open={open} onClose={setOpen} className="relative z-[60] md:hidden">
-        <AnimatePresence>
-          {open && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-                aria-hidden="true"
-              />
-              <div className="fixed inset-0 flex items-start justify-end p-4 pt-[68px]">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.96, y: -8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, y: -8 }}
-                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <Dialog.Panel
-                    className="w-[min(240px,85vw)] overflow-hidden rounded-2xl shadow-xl"
+              <AnimatePresence>
+                {open && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96, y: -6 }}
+                    transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute right-0 top-[calc(100%+8px)] w-52 overflow-hidden shadow-xl"
                     style={{
                       background: "var(--surface)",
                       border: "1px solid var(--border)",
                     }}
                   >
-                    <div
-                      className="flex items-center justify-between border-b px-4 py-3"
-                      style={{ borderColor: "var(--border)" }}
-                    >
-                      <Dialog.Title
-                        className="text-sm font-semibold"
-                        style={{ color: "var(--fg)" }}
-                      >
-                        Navigation
-                      </Dialog.Title>
-                      <button
-                        onClick={() => setOpen(false)}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg transition hover:opacity-70"
-                        style={{ color: "var(--fg-3)" }}
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    <div className="p-2">
+                    <nav className="p-1.5" aria-label="Mobile">
                       {NAV.map((item) => {
                         const active =
                           item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
@@ -209,8 +198,7 @@ export default function Navbar() {
                           <Link
                             key={item.href}
                             href={item.href}
-                            onClick={() => setOpen(false)}
-                            className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
+                            className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium transition-colors"
                             style={{
                               color: active ? "var(--accent-text)" : "var(--fg-2)",
                               background: active ? "var(--accent-soft)" : "transparent",
@@ -218,7 +206,7 @@ export default function Navbar() {
                           >
                             {active && (
                               <span
-                                className="h-1.5 w-1.5 rounded-full"
+                                className="h-1.5 w-1.5 shrink-0 rounded-full"
                                 style={{ background: "var(--accent)" }}
                               />
                             )}
@@ -226,30 +214,30 @@ export default function Navbar() {
                           </Link>
                         );
                       })}
-                      <div
-                        className="mt-2 border-t pt-2"
-                        style={{ borderColor: "var(--border)" }}
+                    </nav>
+
+                    <div
+                      className="border-t p-1.5"
+                      style={{ borderColor: "var(--border)" }}
+                    >
+                      <a
+                        href="https://drive.google.com/file/d/1s0EK09EbHgSxA3riuC0QMWzyA32wNedC/view?usp=sharing"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors"
+                        style={{ color: "var(--fg-2)" }}
                       >
-                        <a
-                          href="https://drive.google.com/file/d/1s0EK09EbHgSxA3riuC0QMWzyA32wNedC/view?usp=sharing"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => setOpen(false)}
-                          className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
-                          style={{ color: "var(--fg-2)" }}
-                        >
-                          <Download className="h-4 w-4" />
-                          Download Resume
-                        </a>
-                      </div>
+                        <Download className="h-4 w-4" />
+                        Download Resume
+                      </a>
                     </div>
-                  </Dialog.Panel>
-                </motion.div>
-              </div>
-            </>
-          )}
-        </AnimatePresence>
-      </Dialog>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </header>
     </>
   );
 }
