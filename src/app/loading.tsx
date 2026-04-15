@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <main id="content" className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+    <main id="content" className="mx-auto max-w-6xl px-6 py-14 md:py-20">
       <div className="space-y-6">
         <div className="h-10 w-64 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
         <div className="h-5 w-full max-w-xl animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
