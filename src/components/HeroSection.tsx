@@ -61,7 +61,8 @@ export default function HeroSection({ onNavigate }: HeroSectionProps) {
               href={heroButtons.secondary.href}
               className="btn btn-secondary hover-lift magnetic"
               id="download-resume"
-              download="Resume_of_Jubayer_Ahmed.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <i className={heroButtons.secondary.icon}></i>
               {heroButtons.secondary.text}
