@@ -33,6 +33,7 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
   const skipRef     = useRef<HTMLButtonElement>(null);
   const barRef      = useRef<HTMLDivElement>(null);
   const counterRef  = useRef<HTMLSpanElement>(null);
+  const seamRef     = useRef<HTMLDivElement>(null);
   const timersRef   = useRef<number[]>([]);
   const exitCalled  = useRef(false);
 
@@ -47,46 +48,58 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
     exitCalled.current = true;
     clearTimers();
 
-    // Stop ambient orb loops
     gsap.killTweensOf([orb1Ref.current, orb2Ref.current, orb3Ref.current, ringRef.current]);
+
+    const header      = document.querySelector("header") as HTMLElement | null;
+    const pageContent = document.getElementById("page-content");
+
+    // Prepare page — hidden but positioned, ready to animate
+    if (header) {
+      gsap.set(header, { visibility: "visible", autoAlpha: 0, y: -50, filter: "blur(6px)" });
+    }
+    if (pageContent) {
+      gsap.set(pageContent, { visibility: "visible", autoAlpha: 0, scale: 1.06, filter: "blur(12px)" });
+    }
 
     const tl = gsap.timeline();
 
-    // Fade out all overlay content
+    // 1. Snap intro elements out fast
     tl.to(
       [wordRef.current, topLineRef.current, botLineRef.current,
-       counterRef.current, skipRef.current, ringRef.current],
-      { autoAlpha: 0, duration: 0.22, ease: "power2.in", stagger: 0.012 }
+       counterRef.current, skipRef.current, ringRef.current,
+       orb1Ref.current, orb2Ref.current, orb3Ref.current],
+      { autoAlpha: 0, duration: 0.18, ease: "power3.in", stagger: 0.006 }
     );
 
-    // ── Iris close: dark overlay shrinks to a dot at center ──
-    // This reveals the page content through the shrinking circle
+    // 2. Seam glow appears at bottom edge of overlay — signals the curtain is about to lift
+    tl.to(seamRef.current, { autoAlpha: 1, duration: 0.22, ease: "power2.out" }, "-=0.05");
+
+    // 3. Curtain slides UP off screen
     tl.to(
       overlayRef.current,
       {
-        clipPath: "circle(0% at 50% 50%)",
-        duration: 0.72,
-        ease: "power3.inOut",
+        yPercent: -100,
+        duration: 1.0,
+        ease: "expo.inOut",
         onStart() {
-          // Set page elements up for their entrance animations
-          const header = document.querySelector("header") as HTMLElement | null;
-          const pageContent = document.getElementById("page-content");
-
+          // Header drops in from above as curtain rises
           if (header) {
-            gsap.set(header, { visibility: "visible", y: -60, autoAlpha: 0 });
-            gsap.to(header, { y: 0, autoAlpha: 1, duration: 0.6, delay: 0.28, ease: "power3.out" });
+            gsap.to(header, {
+              autoAlpha: 1, y: 0, filter: "blur(0px)",
+              duration: 0.65, delay: 0.18, ease: "expo.out",
+            });
           }
+          // Page zooms into focus slightly behind the rising curtain
           if (pageContent) {
-            gsap.set(pageContent, { visibility: "visible", y: 55, autoAlpha: 0, filter: "blur(6px)" });
             gsap.to(pageContent, {
-              y: 0, autoAlpha: 1, filter: "blur(0px)",
-              duration: 0.72, delay: 0.34, ease: "power3.out",
+              autoAlpha: 1, scale: 1, filter: "blur(0px)",
+              duration: 0.85, delay: 0.22, ease: "expo.out",
               onComplete,
             });
           }
         },
       },
-      "-=0.08"
+      "-=0.04"
     );
   }, [onComplete]);
 
@@ -161,7 +174,7 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
     }
 
     // ── Initial GSAP states ──
-    gsap.set(overlayRef.current,  { clipPath: "circle(120% at 50% 50%)" });
+    gsap.set(overlayRef.current,  { yPercent: 0 });
     gsap.set(wordRef.current,     { clipPath: "inset(110% 0% 0% 0%)", autoAlpha: 1 });
     gsap.set(skipRef.current,     { autoAlpha: 0 });
     gsap.set(topLineRef.current,  { scaleX: 0, transformOrigin: "left center", autoAlpha: 1 });
@@ -305,6 +318,19 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
         >
           JA · 2026
         </div>
+
+        {/* ── Seam glow — bottom edge light that signals the curtain lifting ── */}
+        <div
+          ref={seamRef}
+          className="pointer-events-none absolute bottom-0 left-0 right-0"
+          style={{
+            height: "2px",
+            background: "linear-gradient(90deg, transparent 0%, rgba(139,92,246,0.9) 25%, rgba(34,211,238,0.7) 50%, rgba(139,92,246,0.9) 75%, transparent 100%)",
+            boxShadow: "0 0 18px 4px rgba(139,92,246,0.45), 0 0 40px 8px rgba(34,211,238,0.15)",
+            opacity: 0,
+            zIndex: 20,
+          }}
+        />
 
         {/* ── Rotating thin ring behind the word ── */}
         <div
