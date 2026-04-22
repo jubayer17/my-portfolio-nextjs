@@ -7,7 +7,7 @@ export interface SocialLink {
 
 export const socialLinksData: SocialLink[] = [
     {
-        href: "https://www.linkedin.com/in/jubayer-ahmed26/",
+        href: "https://www.linkedin.com/in/jubayer26",
         icon: "fab fa-linkedin",
         label: "LinkedIn",
         external: true,
@@ -40,7 +40,7 @@ export const socialLinksData: SocialLink[] = [
 
 export const footerSocialData: SocialLink[] = [
     {
-        href: "https://www.linkedin.com/in/jubayer-ahmed26/",
+        href: "https://www.linkedin.com/in/jubayer26",
         icon: "fab fa-linkedin-in",
         label: "LinkedIn",
         external: true,
