@@ -3,7 +3,9 @@ import SocialLinks from "@/components/ui/SocialLinks";
 import ProfileLinks from "@/components/ui/ProfileLinks";
 import { resume } from "@/data/resume";
 import AnimatedSection from "@/components/ui/AnimatedSection";
-import { Mail, MapPin, Phone, MessageSquare } from "lucide-react";
+import { Mail, MapPin, MessageSquare } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
+import type { ElementType } from "react";
 
 export const metadata = { title: "Contact" };
 
@@ -44,18 +46,20 @@ export default function ContactPage() {
                 Direct Contact
               </p>
               <div className="mt-5 space-y-4">
-                {[
-                  { icon: Mail, label: "Email", content: resume.person.email, href: `mailto:${resume.person.email}` },
-                  { icon: Phone, label: "Phone", content: resume.person.phone },
-                  { icon: MapPin, label: "Location", content: resume.person.location },
-                ].map(({ icon: Icon, label, content, href }) => (
+                {(
+                  [
+                    { icon: Mail,       label: "Email",    content: resume.person.email, href: `mailto:${resume.person.email}`, external: false },
+                    { icon: FaWhatsapp, label: "WhatsApp", content: "+880 1785 720927",  href: "https://wa.me/8801785720927",   external: true },
+                    { icon: MapPin,     label: "Location", content: resume.person.location },
+                  ] as { icon: ElementType; label: string; content: string; href?: string; external?: boolean }[]
+                ).map(({ icon: Icon, label, content, href, external }) => (
                   <div key={label} className="flex items-center gap-3">
                     <span
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
                       style={{
                         background: "var(--surface-2)",
                         borderColor: "var(--border)",
-                        color: "var(--fg-3)",
+                        color: label === "WhatsApp" ? "#25d366" : "var(--fg-3)",
                       }}
                     >
                       <Icon className="h-4 w-4" />
@@ -63,6 +67,8 @@ export default function ContactPage() {
                     {href ? (
                       <a
                         href={href}
+                        target={external ? "_blank" : undefined}
+                        rel={external ? "noopener noreferrer" : undefined}
                         className="link-underline text-sm font-semibold"
                         style={{ color: "var(--fg)" }}
                       >
@@ -107,7 +113,7 @@ export default function ContactPage() {
               Send a Message
             </h2>
             <p className="mt-1.5 text-sm" style={{ color: "var(--fg-3)" }}>
-              Opens your email client with a pre-filled message.
+              Fill in the form and I&rsquo;ll receive your message directly.
             </p>
             <div className="mt-6">
               <ContactForm />
