@@ -1,6 +1,6 @@
 import { Mail } from "lucide-react";
 import { SiGithub, SiCodeforces, SiLeetcode } from "react-icons/si";
-import { FaLinkedin } from "react-icons/fa6";
+import { FaLinkedin, FaWhatsapp } from "react-icons/fa6";
 import type { IconType } from "react-icons";
 import type { LucideIcon } from "lucide-react";
 import { resume } from "@/data/resume";
@@ -17,6 +17,7 @@ const STYLE: Record<string, PlatformStyle> = {
   LinkedIn: { dot: "#0a66c2", hover: "rgba(10,102,194,0.1)", glow: "rgba(10,102,194,0.25)" },
   GitHub: { dot: "#e6edf3", hover: "rgba(230,237,243,0.08)", glow: "rgba(230,237,243,0.15)" },
   Email: { dot: "#f43f5e", hover: "rgba(244,63,94,0.1)", glow: "rgba(244,63,94,0.25)" },
+  WhatsApp: { dot: "#25d366", hover: "rgba(37,211,102,0.1)", glow: "rgba(37,211,102,0.25)" },
   Codeforces: { dot: "#1f8acb", hover: "rgba(31,138,203,0.1)", glow: "rgba(31,138,203,0.25)" },
   LeetCode: { dot: "#ffa116", hover: "rgba(255,161,22,0.1)", glow: "rgba(255,161,22,0.25)" },
 };
@@ -27,11 +28,12 @@ type SocialItem =
 
 export default function SocialLinks({ className = "flex flex-wrap items-center gap-3" }: Props) {
   const items: SocialItem[] = [
-    { label: "LinkedIn", href: resume.person.links.find((l) => l.label === "LinkedIn")?.href ?? "", icon: FaLinkedin, kind: "si" },
-    { label: "GitHub", href: resume.person.links.find((l) => l.label === "GitHub")?.href ?? "", icon: SiGithub, kind: "si" },
-    { label: "Email", href: `mailto:${resume.person.email}`, icon: Mail, kind: "lucide" },
+    { label: "LinkedIn",  href: resume.person.links.find((l) => l.label === "LinkedIn")?.href ?? "",   icon: FaLinkedin,  kind: "si" },
+    { label: "GitHub",    href: resume.person.links.find((l) => l.label === "GitHub")?.href ?? "",     icon: SiGithub,    kind: "si" },
+    { label: "Email",     href: `mailto:${resume.person.email}`,                                        icon: Mail,        kind: "lucide" },
+    { label: "WhatsApp",  href: "https://wa.me/8801785720927",                                          icon: FaWhatsapp,  kind: "si" },
     { label: "Codeforces", href: resume.person.links.find((l) => l.label === "Codeforces")?.href ?? "", icon: SiCodeforces, kind: "si" },
-    { label: "LeetCode", href: resume.person.links.find((l) => l.label === "LeetCode")?.href ?? "", icon: SiLeetcode, kind: "si" },
+    { label: "LeetCode",  href: resume.person.links.find((l) => l.label === "LeetCode")?.href ?? "",   icon: SiLeetcode,  kind: "si" },
   ].filter((i) => Boolean(i.href)) as SocialItem[];
 
   return (
