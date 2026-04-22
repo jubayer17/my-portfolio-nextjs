@@ -37,7 +37,7 @@ export const resume = {
         phone: "+8801785-720927",
         links: [
             { label: "GitHub", href: "https://github.com/jubayer17" },
-            { label: "LinkedIn", href: "https://www.linkedin.com/in/jubayer16" },
+            { label: "LinkedIn", href: "https://www.linkedin.com/in/jubayer26" },
             { label: "Codeforces", href: "https://codeforces.com/profile/GalvaaaTroN" },
             { label: "LeetCode", href: "https://leetcode.com/u/Jubayer17" },
         ] satisfies LinkItem[],
