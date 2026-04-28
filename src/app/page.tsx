@@ -188,7 +188,7 @@ export default function HomePage() {
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                     </Link>
                     <a
-                      href="https://drive.google.com/file/d/16pUBuhKtAb8VVcC5WuubsFiTUTkWO-bg/view?usp=sharing"
+                      href="https://drive.google.com/file/d/1IwcrAIXTK7EbeSUiHwsI9-0d48OfVd_k/view?usp=sharing"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn btn-ghost"
