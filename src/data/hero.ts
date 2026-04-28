@@ -20,7 +20,7 @@ export const heroButtons = {
     secondary: {
         text: "Download Resume",
         icon: "fas fa-download",
-        href: "https://drive.google.com/file/d/16pUBuhKtAb8VVcC5WuubsFiTUTkWO-bg/view?usp=sharing",
+        href: "https://drive.google.com/file/d/1IwcrAIXTK7EbeSUiHwsI9-0d48OfVd_k/view?usp=sharing",
     },
 };
 
