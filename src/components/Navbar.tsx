@@ -123,7 +123,7 @@ export default function Navbar() {
           {/* ── Actions ── */}
           <div className="flex items-center gap-2">
             <a
-              href="https://drive.google.com/file/d/16pUBuhKtAb8VVcC5WuubsFiTUTkWO-bg/view?usp=sharing"
+              href="https://drive.google.com/file/d/1IwcrAIXTK7EbeSUiHwsI9-0d48OfVd_k/view?usp=sharing"
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-ghost hidden h-8 px-3 text-xs md:inline-flex"
@@ -221,7 +221,7 @@ export default function Navbar() {
                       style={{ borderColor: "var(--border)" }}
                     >
                       <a
-                        href="https://drive.google.com/file/d/16pUBuhKtAb8VVcC5WuubsFiTUTkWO-bg/view?usp=sharing"
+                        href="https://drive.google.com/file/d/1IwcrAIXTK7EbeSUiHwsI9-0d48OfVd_k/view?usp=sharing"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors"
