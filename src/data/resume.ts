@@ -283,17 +283,55 @@ export const resume = {
 
     projects: [
         {
+            slug: "glamora",
+            title: "Glamora",
+            tagline: "Multi-Tenant SaaS — Salon & Barbershop Management",
+            range: { start: "2026", end: "Present" },
+            category: "Enterprise",
+            featured: true,
+            status: {
+                label: "In active development",
+                note: "Currently building",
+                tone: "accent",
+            },
+            description:
+                "Multi-tenant SaaS for salons and barbershops — each business gets its own workspace covering appointments, billing, inventory, and staff attendance, with ZKTeco biometric integration.",
+            bullets: [
+                "Building a multi-tenant SaaS architecture so every salon and barbershop runs an isolated workspace from a single deployment.",
+                "Built an appointment engine covering booking, rescheduling, and stylist assignment against real-time chair availability.",
+                "Implemented billing and inventory so each service and retail sale settles against stock in one transaction.",
+                "Integrated ZKTeco biometric devices for staff attendance tracking, feeding directly into payroll-ready reporting.",
+                "Backed the system with NestJS, PostgreSQL, and Prisma, using Redis to keep schedule and availability reads fast under load.",
+            ],
+            features: [
+                "Multi-tenant workspaces",
+                "Appointment scheduling",
+                "Billing & invoicing",
+                "Retail inventory",
+                "Staff attendance tracking",
+                "ZKTeco biometric integration",
+                "Redis-backed availability reads",
+                "Dockerised deployment",
+            ],
+            stack: [
+                "Next.js",
+                "NestJS",
+                "TypeScript",
+                "PostgreSQL",
+                "Prisma",
+                "Redis",
+                "Docker",
+                "CI/CD (GitHub Actions)",
+            ],
+            links: [],
+        },
+        {
             slug: "sortorium",
             title: "Sortorium",
             tagline: "ERP Platform — HR, Inventory & Operations",
             range: { start: "2026", end: "Present" },
             category: "Enterprise",
             featured: true,
-            status: {
-                label: "In active development",
-                note: "Shipping incrementally",
-                tone: "accent",
-            },
             description:
                 "Multi-tenant ERP platform covering HR, inventory, and day-to-day operations, built on subdomain tenancy with role-based access across multiple branches.",
             bullets: [
@@ -324,45 +362,7 @@ export const resume = {
                 "Kubernetes",
                 "CI/CD (GitHub Actions)",
             ],
-            // TODO: add { label: "Live", href: "…" } once the URL is confirmed.
-            links: [],
-        },
-        {
-            slug: "glamora",
-            title: "Glamora",
-            tagline: "Barbershop & Salon Management System",
-            range: { start: "2026", end: "2026" },
-            category: "Enterprise",
-            featured: true,
-            description:
-                "Enterprise-grade salon operations system handling appointments, billing, inventory, and staff attendance, with ZKTeco biometric device integration.",
-            bullets: [
-                "Built an appointment engine covering booking, rescheduling, and stylist assignment against real-time chair availability.",
-                "Implemented billing and inventory so each service and retail sale settles against stock in one transaction.",
-                "Integrated ZKTeco biometric devices for staff attendance tracking, feeding directly into payroll-ready reporting.",
-                "Backed the system with NestJS, PostgreSQL, and Prisma, using Redis to keep schedule and availability reads fast under load.",
-            ],
-            features: [
-                "Appointment scheduling",
-                "Billing & invoicing",
-                "Retail inventory",
-                "Staff attendance tracking",
-                "ZKTeco biometric integration",
-                "Redis-backed availability reads",
-                "Dockerised deployment",
-                "CI/CD pipeline",
-            ],
-            stack: [
-                "Next.js",
-                "NestJS",
-                "TypeScript",
-                "PostgreSQL",
-                "Prisma",
-                "Redis",
-                "Docker",
-                "CI/CD (GitHub Actions)",
-            ],
-            links: [],
+            links: [{ label: "Live", href: "https://sortorium.com/" }],
         },
         {
             slug: "hirebd",
