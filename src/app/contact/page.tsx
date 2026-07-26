@@ -78,7 +78,7 @@ export default function ContactPage() {
       <div className="mt-10 grid gap-5 lg:grid-cols-12 lg:gap-6">
 
         {/* ── Left: channels ── */}
-        <AnimatedSection className="lg:col-span-5" direction="left" delay={0.08}>
+        <AnimatedSection className="min-w-0 lg:col-span-5" direction="left" delay={0.08}>
           <div className="space-y-5">
             <div className="card accent-bar p-6">
               <p
@@ -148,7 +148,7 @@ export default function ContactPage() {
         </AnimatedSection>
 
         {/* ── Right: form ── */}
-        <AnimatedSection className="lg:col-span-7" direction="right" delay={0.12}>
+        <AnimatedSection className="min-w-0 lg:col-span-7" direction="right" delay={0.12}>
           <div className="card accent-bar p-6 md:p-8">
             <h2 className="font-outfit text-xl font-bold" style={{ color: "var(--fg)" }}>
               Send a Message

@@ -615,6 +615,10 @@ body:has(#intro-overlay) #page-content {
 /* ── Input field ── */
 .field {
   width: 100%;
+  /* A textarea's default `cols` gives it an intrinsic min-content width that
+     grid/flex parents (min-width: auto) refuse to shrink past — that pushed
+     the contact card 40px wider than the phone viewport. */
+  min-width: 0;
   background: var(--surface-2);
   border: 1px solid var(--border);
   padding: 0.625rem 0.875rem;

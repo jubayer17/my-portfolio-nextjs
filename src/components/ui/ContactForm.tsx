@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Send, CheckCheck, Loader2, AlertCircle } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa6";
 
@@ -16,13 +16,24 @@ export default function ContactForm() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errMsg, setErrMsg] = useState("");
+  const messageRef = useRef<HTMLTextAreaElement>(null);
 
   const empty = !message.trim();
   const sending = status === "sending";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (empty || sending) return;
+    if (sending) return;
+
+    // The button used to be `disabled` while the message was empty, so filling
+    // in only name and email and pressing Send did nothing at all — no error,
+    // no hint. Fail loudly and put the cursor where the problem is instead.
+    if (empty) {
+      setErrMsg("Please write a message before sending.");
+      setStatus("error");
+      messageRef.current?.focus();
+      return;
+    }
 
     setStatus("sending");
     setErrMsg("");
@@ -138,10 +149,17 @@ export default function ContactForm() {
         <textarea
           id="c-msg"
           name="message"
+          ref={messageRef}
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            // Clear the "write a message" complaint as soon as they start typing.
+            if (status === "error" && e.target.value.trim()) setStatus("idle");
+          }}
           rows={6}
           required
+          aria-invalid={status === "error" && empty}
+          aria-describedby={status === "error" ? "c-msg-error" : undefined}
           maxLength={MAX_MESSAGE}
           placeholder="Tell me about your project or opportunity..."
           className="field resize-y"
@@ -151,6 +169,7 @@ export default function ContactForm() {
 
       {status === "error" && (
         <p
+          id="c-msg-error"
           role="alert"
           className="flex items-start gap-2 border px-3 py-2.5 text-sm"
           style={{
@@ -165,12 +184,14 @@ export default function ContactForm() {
       )}
 
       <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:flex-wrap">
+        {/* Only disabled while a send is in flight — an empty message is
+            reported on submit rather than silently blocking the click. */}
         <button
           type="submit"
-          disabled={empty || sending}
-          className={`btn w-full py-2.5 sm:w-auto ${empty || sending ? "" : "btn-primary"}`}
+          disabled={sending}
+          className={`btn w-full py-2.5 sm:w-auto ${sending ? "" : "btn-primary"}`}
           style={
-            empty || sending
+            sending
               ? {
                   background: "var(--surface-3)",
                   color: "var(--fg-4)",
