@@ -8,6 +8,7 @@ import { LazyMotion, domAnimation, m } from "framer-motion";
 
 import SectionHeader from "@/components/ui/SectionHeader";
 import TechBadge from "@/components/ui/TechBadge";
+import { useSpotlight } from "@/components/ui/useSpotlight";
 import { resume } from "@/data/resume";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -26,11 +27,13 @@ const TONE: Record<string, { icon: LucideIcon; accent: string; soft: string }> =
 const FALLBACK = { icon: Package, accent: "var(--accent)", soft: "var(--accent-soft)" };
 
 export default function SkillsMap() {
+  const gridRef = useSpotlight<HTMLDivElement>();
+
   return (
     <LazyMotion features={domAnimation} strict>
       <section className="relative overflow-hidden py-14 sm:py-20" data-gsap="reveal">
         <span className="section-num" data-gsap="parallax" data-gsap-speed="10">
-          01
+          02
         </span>
 
         <SectionHeader
@@ -40,7 +43,7 @@ export default function SkillsMap() {
           action={{ label: "Experience", href: "/work" }}
         />
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div ref={gridRef} className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {resume.skills.map((group, i) => {
             const tone = TONE[group.key] ?? FALLBACK;
             const Icon = tone.icon;
@@ -52,7 +55,7 @@ export default function SkillsMap() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.3, delay: Math.min(i, 5) * 0.04, ease: EASE }}
-                className="card group relative flex flex-col p-5 sm:p-6"
+                className="card spotlight group relative flex flex-col p-5 sm:p-6"
               >
                 <span
                   className="absolute inset-x-0 top-0 h-[3px]"

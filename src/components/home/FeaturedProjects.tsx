@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import {
   LazyMotion, domAnimation, m, AnimatePresence,
@@ -67,8 +67,14 @@ const row: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: EASE } },
 };
 
-const PREVIEW_W = 460;
-const PREVIEW_H = 340;
+// Upper bounds only — the panel sizes itself to the capture's aspect ratio, so
+// a full-page shot is height-limited and a viewport shot is width-limited.
+// Either way the whole screenshot stays visible.
+const PREVIEW_MAX_W = 460;
+// Budget for the panel as a whole. The caption strip below the image is part
+// of that budget — leaving it out let a tall preview run off the viewport.
+const PREVIEW_MAX_VH = 72;
+const CAPTION_H = 62;
 const PAD = 20;
 
 export default function FeaturedProjects() {
@@ -95,12 +101,23 @@ export default function FeaturedProjects() {
   const sx = useSpring(x, { stiffness: 420, damping: 40, mass: 0.5 });
   const sy = useSpring(y, { stiffness: 420, damping: 40, mass: 0.5 });
 
+  const panelRef = useRef<HTMLDivElement>(null);
+  const lastPointer = useRef({ x: 0, y: 0 });
+
   const track = useCallback(
     (clientX: number, clientY: number) => {
-      const maxX = window.innerWidth - PREVIEW_W - PAD;
-      const maxY = window.innerHeight - PREVIEW_H - PAD;
+      lastPointer.current = { x: clientX, y: clientY };
+
+      // Measure the panel rather than assuming a size — its height depends on
+      // the hovered project's aspect ratio.
+      const el = panelRef.current;
+      const w = el?.offsetWidth || PREVIEW_MAX_W;
+      const h = el?.offsetHeight || window.innerHeight * PREVIEW_MAX_VH;
+
+      const maxX = window.innerWidth - w - PAD;
+      const maxY = window.innerHeight - h - PAD;
       x.set(Math.min(Math.max(clientX + PAD, PAD), Math.max(maxX, PAD)));
-      y.set(Math.min(Math.max(clientY - PREVIEW_H / 2, PAD), Math.max(maxY, PAD)));
+      y.set(Math.min(Math.max(clientY - h / 2, PAD), Math.max(maxY, PAD)));
     },
     [x, y]
   );
@@ -108,11 +125,22 @@ export default function FeaturedProjects() {
   const hovered = projects.find((p) => p.slug === hoveredSlug);
   const preview = hovered?.images?.[0];
 
+  // The panel doesn't exist yet on the pointerenter that reveals it, so the
+  // first track() runs against fallback numbers. Re-clamp once it's measurable,
+  // otherwise a tall preview can hang off the bottom of the viewport.
+  useEffect(() => {
+    if (!hovered) return;
+    const id = requestAnimationFrame(() =>
+      track(lastPointer.current.x, lastPointer.current.y)
+    );
+    return () => cancelAnimationFrame(id);
+  }, [hovered, track]);
+
   return (
     <LazyMotion features={domAnimation} strict>
       <section className="relative overflow-hidden py-14 sm:py-20" data-gsap="reveal">
         <span className="section-num" data-gsap="parallax" data-gsap-speed="12">
-          02
+          03
         </span>
 
         <SectionHeader
@@ -288,8 +316,20 @@ export default function FeaturedProjects() {
           {hovered && (
             <m.div
               key={hovered.slug}
+              ref={panelRef}
               className="pointer-events-none fixed left-0 top-0 z-[60] hidden lg:block"
-              style={{ x: sx, y: sy, width: PREVIEW_W }}
+              style={{
+                x: sx,
+                y: sy,
+                // Panel width follows the capture's aspect ratio: wide shots hit
+                // the 460px cap, tall full-page shots are limited by the height
+                // left over once the caption strip is subtracted.
+                width: preview
+                  ? `min(${PREVIEW_MAX_W}px, calc((${PREVIEW_MAX_VH}vh - ${CAPTION_H}px) * ${(
+                      preview.width / preview.height
+                    ).toFixed(4)}))`
+                  : `${PREVIEW_MAX_W}px`,
+              }}
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.96 }}
@@ -313,17 +353,19 @@ export default function FeaturedProjects() {
                 />
 
                 {preview ? (
+                  // The panel is already sized to the aspect ratio, so the
+                  // image just fills it — the whole capture, uncropped.
                   <Image
                     src={preview.src}
                     alt=""
-                    width={920}
-                    height={575}
-                    className="block h-auto w-full object-contain"
-                    sizes="460px"
+                    width={preview.width}
+                    height={preview.height}
+                    className="block h-auto w-full"
+                    sizes={`${PREVIEW_MAX_W}px`}
                   />
                 ) : (
                   <div
-                    className="dot-grid flex aspect-[16/10] items-center justify-center"
+                    className="dot-grid flex aspect-[16/10] w-full items-center justify-center"
                     style={{ background: "var(--surface-2)" }}
                   >
                     <p

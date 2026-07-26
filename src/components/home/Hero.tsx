@@ -8,6 +8,10 @@ import { LazyMotion, domAnimation, m, useReducedMotion, type Variants } from "fr
 import SocialLinks from "@/components/ui/SocialLinks";
 import TypewriterText from "@/components/ui/TypewriterText";
 import TechBadge from "@/components/ui/TechBadge";
+import CountUp from "@/components/ui/CountUp";
+import Magnetic from "@/components/ui/Magnetic";
+import RevealText from "@/components/ui/RevealText";
+import { useSpotlight } from "@/components/ui/useSpotlight";
 import { resume } from "@/data/resume";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -22,10 +26,22 @@ const stagger: Variants = {
   visible: { transition: { staggerChildren: 0.05, delayChildren: 0.04 } },
 };
 
-const CORE_STACK = ["NestJS", "Django", "Next.js", "PostgreSQL", "Redis", "Docker"];
+// Backend → frontend → data → infra, so the row reads as a full stack.
+const CORE_STACK = [
+  "NestJS",
+  "Django",
+  "Next.js",
+  "TypeScript",
+  "PostgreSQL",
+  "Redis",
+  "Docker",
+  "Kubernetes",
+  "AWS (EC2, S3)",
+];
 
 export default function Hero() {
   const reduceMotion = useReducedMotion();
+  const metricsRef = useSpotlight<HTMLDivElement>();
   const role = resume.experience[0];
 
   return (
@@ -53,13 +69,17 @@ export default function Hero() {
 
             {/* Sized off vw so the full name always sits on a single line,
                 down to the narrowest phone. */}
-            <m.h1
-              variants={up}
-              className="font-outfit mt-4 whitespace-nowrap text-[clamp(1.85rem,6.4vw,3.75rem)] font-bold leading-[1.08] tracking-tight"
-              style={{ color: "var(--fg)" }}
-            >
-              {resume.person.name}
-            </m.h1>
+            <m.div variants={up}>
+              <RevealText
+                as="h1"
+                text={resume.person.name}
+                immediate
+                delay={0.15}
+                stagger={0.08}
+                className="font-outfit mt-4 whitespace-nowrap text-[clamp(1.85rem,6.4vw,3.75rem)] font-bold leading-[1.08] tracking-tight"
+                style={{ color: "var(--fg)" }}
+              />
+            </m.div>
 
             <m.p
               variants={up}
@@ -114,19 +134,23 @@ export default function Hero() {
 
             <m.div variants={up} className="mt-auto pt-8">
               <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
-                <Link href="/projects" className="btn btn-primary group">
-                  View Projects
-                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                </Link>
-                <a
-                  href={resume.person.resumeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-ghost"
-                >
-                  <Download className="h-4 w-4" />
-                  Download Resume
-                </a>
+                <Magnetic strength={10}>
+                  <Link href="/projects" className="btn btn-primary group">
+                    View Projects
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </Link>
+                </Magnetic>
+                <Magnetic strength={10}>
+                  <a
+                    href={resume.person.resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-ghost"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download Resume
+                  </a>
+                </Magnetic>
               </div>
               <div className="mt-6">
                 <SocialLinks className="flex flex-wrap items-center gap-2.5" />
@@ -222,21 +246,21 @@ export default function Hero() {
 
             {/* Metrics — all four traceable to the CV */}
             <div
+              ref={metricsRef}
               className="grid grid-cols-2 gap-px border-b"
               style={{ borderColor: "var(--border)", background: "var(--border)" }}
             >
               {resume.metrics.map((metric) => (
                 <div
                   key={metric.label}
-                  className="group p-4 transition-colors duration-200 sm:p-5"
+                  className="spotlight group p-4 transition-colors duration-200 sm:p-5"
                   style={{ background: "var(--surface)" }}
                 >
-                  <p
-                    className="font-outfit text-2xl font-bold leading-none tracking-tight sm:text-3xl"
+                  <CountUp
+                    value={metric.value}
+                    className="font-outfit block text-2xl font-bold leading-none tracking-tight sm:text-3xl"
                     style={{ color: metric.tone }}
-                  >
-                    {metric.value}
-                  </p>
+                  />
                   <p
                     className="mt-2 text-[11px] font-bold uppercase tracking-[0.08em]"
                     style={{ color: "var(--fg-2)" }}

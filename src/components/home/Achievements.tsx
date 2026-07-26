@@ -4,6 +4,8 @@ import { Trophy, ExternalLink } from "lucide-react";
 import { LazyMotion, domAnimation, m, type Variants } from "framer-motion";
 
 import SectionHeader from "@/components/ui/SectionHeader";
+import CountUp from "@/components/ui/CountUp";
+import { useSpotlight } from "@/components/ui/useSpotlight";
 import { resume } from "@/data/resume";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -14,11 +16,15 @@ const item: Variants = {
 };
 
 export default function Achievements() {
+  // One ref per grid — a ref only ever attaches to a single element.
+  const solvingRef = useSpotlight<HTMLDivElement>();
+  const contestsRef = useSpotlight<HTMLDivElement>();
+
   return (
     <LazyMotion features={domAnimation} strict>
       <section className="relative overflow-hidden py-14 sm:py-20" data-gsap="reveal">
         <span className="section-num" data-gsap="parallax" data-gsap-speed="14">
-          03
+          04
         </span>
 
         <SectionHeader
@@ -30,6 +36,7 @@ export default function Achievements() {
 
         {/* ── Problem solving ── */}
         <m.div
+          ref={solvingRef}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
@@ -43,15 +50,14 @@ export default function Achievements() {
               href={p.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="card group flex flex-col p-5"
+              className="card spotlight group flex flex-col p-5"
             >
               <div className="flex items-baseline justify-between gap-2">
-                <span
+                <CountUp
+                  value={p.count}
                   className="font-outfit text-3xl font-bold tracking-tight"
                   style={{ color: "var(--accent-text)" }}
-                >
-                  {p.count}
-                </span>
+                />
                 <ExternalLink
                   className="h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
                   style={{ color: "var(--fg-4)" }}
@@ -81,9 +87,14 @@ export default function Achievements() {
           viewport={{ once: true, margin: "-50px" }}
           variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
           className="mt-4 grid gap-4 sm:grid-cols-2"
+          ref={contestsRef}
         >
           {resume.achievements.map((a, idx) => (
-            <m.article key={a.title} variants={item} className="card card-shimmer flex gap-4 p-5">
+            <m.article
+              key={a.title}
+              variants={item}
+              className="card card-shimmer spotlight flex gap-4 p-5"
+            >
               <span
                 className="font-mono flex h-8 w-8 shrink-0 items-center justify-center border text-xs font-bold"
                 style={{

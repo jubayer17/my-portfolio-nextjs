@@ -59,7 +59,9 @@ export type ProjectItem = {
     features: string[];
     stack: string[];
     links: LinkItem[];
-    images?: { src: string; alt: string }[];
+    /** Intrinsic pixel size — the hover preview sizes itself from the aspect
+     *  ratio, since captures range from wide viewport shots to tall full-page ones. */
+    images?: { src: string; alt: string; width: number; height: number }[];
     category: ProjectCategory;
     status?: ProjectStatus;
     featured?: boolean;
@@ -90,6 +92,23 @@ export const resume = {
             { label: "LeetCode", href: "https://leetcode.com/u/Jubayer17" },
             { label: "CSES", href: "https://cses.fi/user/GalvaaaTroN" },
         ] satisfies LinkItem[],
+    },
+
+    /** Narrative voice for the About section — first person, not CV prose. */
+    about: {
+        portrait: { src: "/assets/me.jpg", alt: "Jubayer Ahmed" },
+        heading: "Backend depth, front-end craft",
+        paragraphs: [
+            "I'm a software engineer in Dhaka who builds the parts of a product most people never see — the APIs, the data models, the caching layers that decide whether an app feels instant or sluggish.",
+            "Most of my work lives in NestJS, Django, and PostgreSQL: multi-tenant ERP systems, salon and restaurant operations platforms, real-estate search. I care about clean architecture and SOLID because they're what let a codebase survive its second year.",
+            "Five years of competitive programming shaped how I think about problems — decompose, find the constraint, optimise what actually matters. These days I'm extending that into LLM and RAG systems.",
+        ],
+        facts: [
+            { label: "Based in", value: "Dhaka, Bangladesh" },
+            { label: "Focus", value: "Backend architecture & AI integration" },
+            { label: "Currently", value: "Software Engineer at GeekSSort" },
+            { label: "Open to", value: "Full-time roles & freelance" },
+        ],
     },
 
     summary: [
@@ -383,7 +402,14 @@ export const resume = {
                 "REST APIs",
             ],
             links: [{ label: "Live", href: "https://job-board-client-six.vercel.app/" }],
-            images: [{ src: "/assets/Job-Board-SS.png", alt: "HireBD job marketplace screenshot" }],
+            images: [
+                {
+                    src: "/assets/hirebd-SS.png",
+                    alt: "HireBD job marketplace — search, live job ticker, and job listings",
+                    width: 1920,
+                    height: 3413,
+                },
+            ],
         },
         {
             slug: "restrocore",
@@ -427,7 +453,7 @@ export const resume = {
                 "Zod",
             ],
             links: [{ label: "Live", href: "https://restro-core-frontend.vercel.app/" }],
-            images: [{ src: "/assets/restroCore-SS.png", alt: "RestroCore restaurant platform screenshot" }],
+            images: [{ src: "/assets/restroCore-SS.png", alt: "RestroCore restaurant platform screenshot", width: 1920, height: 2888 }],
         },
         {
             slug: "geek-estates",
@@ -505,7 +531,14 @@ export const resume = {
                 "REST APIs",
             ],
             links: [{ label: "Live", href: "https://cf-ladder-pro.vercel.app" }],
-            images: [{ src: "/assets/ladderSS.png", alt: "CF Ladder dashboard screenshot" }],
+            images: [
+                {
+                    src: "/assets/cf-ladder-SS.png",
+                    alt: "CF Ladder — rating ladders, tag filters, and solve-progress dashboard",
+                    width: 1920,
+                    height: 3413,
+                },
+            ],
         },
         {
             slug: "edulecta",
@@ -544,7 +577,7 @@ export const resume = {
                 "Axios",
             ],
             links: [{ label: "Live", href: "https://client-sigma-rust.vercel.app" }],
-            images: [{ src: "/assets/edulectaSS.png", alt: "Edulecta eLearning platform screenshot" }],
+            images: [{ src: "/assets/edulectaSS.png", alt: "Edulecta eLearning platform screenshot", width: 1347, height: 597 }],
         },
     ] satisfies ProjectItem[],
 

@@ -647,6 +647,62 @@ body:has(#intro-overlay) #page-content {
   scrollbar-width: thin;
 }
 
+/* ── Cursor spotlight ──
+   useSpotlight writes --mx/--my; the glow is drawn entirely in CSS so a
+   moving pointer never triggers a React render. */
+.spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(
+    260px circle at var(--mx, 50%) var(--my, 50%),
+    var(--accent-soft),
+    transparent 70%
+  );
+}
+@media (hover: hover) and (pointer: fine) {
+  .spotlight:hover::before {
+    opacity: 1;
+  }
+}
+/* Keep real content above the glow layer. */
+.spotlight > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Portrait frame ── */
+.portrait {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.portrait img {
+  transition: transform 0.7s var(--ease-out-quint), filter 0.5s ease;
+}
+@media (hover: hover) {
+  .portrait:hover img {
+    transform: scale(1.04);
+  }
+}
+/* Tones the busy background down so the subject reads first. */
+.portrait::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 10%, transparent) 0%,
+    transparent 35%,
+    color-mix(in srgb, var(--bg) 78%, transparent) 100%
+  );
+}
+
 } /* end @layer components */
 
 /* ═══════════════════════════════════════════════════════════

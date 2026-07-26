@@ -2,12 +2,14 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 
+import RevealText from "@/components/ui/RevealText";
+
 interface Props {
-  eyebrow: string;
-  eyebrowIcon?: ReactNode;
-  title: string;
-  description?: string;
-  action?: { label: string; href: string };
+  readonly eyebrow: string;
+  readonly eyebrowIcon?: ReactNode;
+  readonly title: string;
+  readonly description?: string;
+  readonly action?: { label: string; href: string };
 }
 
 export default function SectionHeader({
@@ -24,12 +26,12 @@ export default function SectionHeader({
           {eyebrowIcon}
           {eyebrow}
         </span>
-        <h2
+        <RevealText
+          as="h2"
+          text={title}
           className="font-outfit mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl"
           style={{ color: "var(--fg)" }}
-        >
-          {title}
-        </h2>
+        />
         {description && (
           <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--fg-3)" }}>
             {description}

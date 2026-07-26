@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import { resume } from "@/data/resume";
 import ClientEffects from "@/components/ClientEffects";
 import IntroManager from "@/components/IntroManager";
+import ScrollProgress from "@/components/ui/ScrollProgress";
 
 // Space Grotesk — geometric display / heading font.
 // The CSS variable names here are the *sources* that globals.css maps into
@@ -95,6 +96,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <ThemeProvider>
           <IntroManager />
           <ClientEffects />
+          <ScrollProgress />
           <Navbar />
           <MotionLayout>{children}</MotionLayout>
           <Footer />

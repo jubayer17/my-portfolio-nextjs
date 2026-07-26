@@ -9,6 +9,7 @@ import { ExternalLink, ArrowRight, Calendar } from "lucide-react";
 import { PROJECT_DETAILS_ENABLED, type ProjectItem } from "@/data/resume";
 import TechBadge from "@/components/ui/TechBadge";
 import StatusBadge from "@/components/ui/StatusBadge";
+import { useSpotlight } from "@/components/ui/useSpotlight";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -97,6 +98,7 @@ function CardTitleLink({
 
 export default function ProjectsGrid({ projects }: { projects: readonly ProjectItem[] }) {
   const reduceMotion = useReducedMotion();
+  const gridRef = useSpotlight<HTMLDivElement>();
 
   const categories = useMemo(
     () => ["All", ...Array.from(new Set(projects.map((p) => p.category)))],
@@ -154,7 +156,7 @@ export default function ProjectsGrid({ projects }: { projects: readonly ProjectI
         </div>
 
         {/* ── Grid ── */}
-        <m.div layout className="grid gap-5 md:grid-cols-2">
+        <m.div ref={gridRef} layout className="grid gap-5 md:grid-cols-2">
           <AnimatePresence mode="popLayout" initial={false}>
             {filtered.map((p) => {
               const live = p.links.find((l) => l.label === "Live");
@@ -168,9 +170,11 @@ export default function ProjectsGrid({ projects }: { projects: readonly ProjectI
                   animate={{ opacity: 1, y: 0 }}
                   exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
                   transition={{ duration: 0.26, ease: EASE }}
-                  className="card group relative flex h-full flex-col"
+                  className="card spotlight group relative flex h-full flex-col"
                 >
-                  {/* Cover — object-contain so wide screenshots aren't cropped */}
+                  {/* Cover — object-cover anchored to the top. Several captures
+                      are full-page and taller than they are wide; contain would
+                      shrink those to a thin sliver inside the 16:9 frame. */}
                   <CoverFrame slug={p.slug} live={live?.href}>
                     <div className="relative aspect-[16/9]">
                       {cover ? (
@@ -179,7 +183,7 @@ export default function ProjectsGrid({ projects }: { projects: readonly ProjectI
                           alt=""
                           fill
                           sizes="(max-width: 768px) 100vw, 560px"
-                          className="object-contain object-top transition-transform duration-500 group-hover:scale-[1.03]"
+                          className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
                         />
                       ) : (
                         <div className="dot-grid flex h-full w-full items-center justify-center">

@@ -11,11 +11,21 @@ import {
   SiJsonwebtokens, SiOpenai, SiLangchain,
 } from "react-icons/si";
 import { FaAws } from "react-icons/fa6";
-import type { IconType } from "react-icons";
+import {
+  Brain, MessagesSquare, Boxes, Database, Search, Layers, Waypoints, Terminal,
+} from "lucide-react";
+import type { ComponentType, CSSProperties } from "react";
+
+/** Accepts both react-icons and lucide-react components. */
+type AnyIcon = ComponentType<{
+  className?: string;
+  style?: CSSProperties;
+  "aria-hidden"?: boolean | "true" | "false";
+}>;
 
 interface BadgeMeta {
-  icon: IconType;
-  /** Brand colour. Kept for the icon only — see `readable` below. */
+  icon: AnyIcon;
+  /** Brand colour. Kept for the icon only — see `neutralText` below. */
   color: string;
   bg: string;
   /**
@@ -25,6 +35,9 @@ interface BadgeMeta {
    */
   neutralText?: boolean;
 }
+
+/** Builds the 12%-alpha chip background from a hex brand colour. */
+const tint = (hex: string) => `${hex}1f`;
 
 const MAP: Record<string, BadgeMeta> = {
   // ── Languages ──
@@ -61,8 +74,23 @@ const MAP: Record<string, BadgeMeta> = {
   "JWT Authentication": { icon: SiJsonwebtokens, color: "#b039e0", bg: "rgba(214,58,255,0.12)" },
 
   // ── AI & ML ──
-  "OpenAI API": { icon: SiOpenai, color: "var(--fg)", bg: "var(--surface-2)", neutralText: true },
-  "LangChain": { icon: SiLangchain, color: "var(--fg)", bg: "var(--surface-2)", neutralText: true },
+  // OpenAI, LangChain and LangGraph use their real brand hues. LangChain's
+  // official mark is near-black (#1C3C3C), which disappears on the dark
+  // theme, so it's lifted to the same teal at mid luminance.
+  // The remaining entries are concepts, not products — they have no brand
+  // colour, so each gets a distinct hue to keep the card legible at a glance.
+  "OpenAI API": { icon: SiOpenai, color: "#10a37f", bg: tint("#10a37f") },
+  "LangChain": { icon: SiLangchain, color: "#1c9c8b", bg: tint("#1c9c8b") },
+  "LangGraph": { icon: Waypoints, color: "#0ea5a4", bg: tint("#0ea5a4") },
+  // The three brands above own the green→teal band, so the concept hues
+  // below stay clear of it — otherwise half the card reads as one colour.
+  "LLMs": { icon: Brain, color: "#8b5cf6", bg: tint("#8b5cf6") },
+  "RAG": { icon: Layers, color: "#ea580c", bg: tint("#ea580c") },
+  "NLP": { icon: MessagesSquare, color: "#3b82f6", bg: tint("#3b82f6") },
+  "Prompt Engineering": { icon: Terminal, color: "#ca8a04", bg: tint("#ca8a04") },
+  "Embeddings": { icon: Boxes, color: "#db2777", bg: tint("#db2777") },
+  "Vector Databases": { icon: Database, color: "#6366f1", bg: tint("#6366f1") },
+  "Semantic Search": { icon: Search, color: "#0284c7", bg: tint("#0284c7") },
 
   // ── Databases ──
   "PostgreSQL": { icon: SiPostgresql, color: "#4169E1", bg: "rgba(65,105,225,0.12)" },
@@ -102,8 +130,8 @@ const MAP: Record<string, BadgeMeta> = {
 };
 
 interface Props {
-  name: string;
-  size?: "sm" | "md";
+  readonly name: string;
+  readonly size?: "sm" | "md";
 }
 
 export default function TechBadge({ name, size = "sm" }: Props) {
