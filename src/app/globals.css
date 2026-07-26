@@ -1,6 +1,109 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════
+   TAILWIND v4 THEME
+   v4 does not read tailwind.config.ts unless it is pulled in with
+   @config. Everything the utilities need is declared here instead,
+   which is why `font-outfit`, `animate-ping-slow`, etc. now emit CSS.
+═══════════════════════════════════════════════════════════ */
+
+/* `dark:` must follow the .dark class the theme script sets, not the OS. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Fonts — mapped from the next/font source variables set in layout.tsx */
+  --font-outfit: var(--font-space-grotesk), "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-inter: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+
+  /* Body copy defaults to the humanist face rather than system-ui */
+  --default-font-family: var(--font-inter);
+  --default-mono-font-family: var(--font-mono);
+
+  /* Brand ramp */
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #7c3aed;
+  --color-brand-600: #6d28d9;
+  --color-brand-700: #5b21b6;
+  --color-brand-800: #4c1d95;
+  --color-brand-900: #3b0764;
+
+  /* Motion — one place to retune the whole site's feel */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  --animate-float: floatY 6s ease-in-out infinite;
+  --animate-ping-slow: pingSlow 2.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+  --animate-shimmer: shimmerMove 2.4s linear infinite;
+  --animate-slide-up: slideUp 0.42s var(--ease-out-quint) both;
+  --animate-fade-in: fadeIn 0.3s ease-out both;
+  --animate-glow-pulse: glowPulse 3s ease-in-out infinite;
+
+  @keyframes floatY {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -10px, 0);
+    }
+  }
+  @keyframes pingSlow {
+    0% {
+      transform: scale(1);
+      opacity: 0.55;
+    }
+    75%,
+    100% {
+      transform: scale(2.2);
+      opacity: 0;
+    }
+  }
+  @keyframes shimmerMove {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 16px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes glowPulse {
+    0%,
+    100% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
    THEME — CSS CUSTOM PROPERTIES
    All dynamic color values live here.
    Components reference these via var(--...) or Tailwind [var(...)].
@@ -18,43 +121,64 @@
 
   /* Text */
   --fg: #0a0a15;
-  --fg-2: #4a4a6a;
-  --fg-3: #8888a8;
-  --fg-4: #b8b8d0;
+  --fg-2: #3f3f5f;
+  --fg-3: #6b6b8c;
+  --fg-4: #9494b4;
 
   /* Borders */
-  --border: rgba(0, 0, 0, 0.07);
-  --border-2: rgba(0, 0, 0, 0.12);
+  --border: rgba(10, 10, 21, 0.1);
+  --border-2: rgba(10, 10, 21, 0.16);
 
   /* Accent — violet */
   --accent: #7c3aed;
   --accent-2: #6d28d9;
   --accent-soft: rgba(124, 58, 237, 0.07);
+  --accent-line: rgba(124, 58, 237, 0.22);
   --accent-glow: rgba(124, 58, 237, 0.18);
-  --accent-text: #7c3aed;
+  --accent-text: #6d28d9;
 
   /* Cyan secondary */
-  --cyan: #06b6d4;
-  --cyan-soft: rgba(6, 182, 212, 0.08);
+  --cyan: #0891b2;
+  --cyan-soft: rgba(8, 145, 178, 0.08);
 
   /* Status */
-  --success: #10b981;
-  --success-soft: rgba(16, 185, 129, 0.08);
+  --success: #059669;
+  --success-soft: rgba(5, 150, 105, 0.08);
+  --warn: #b45309;
+  --warn-soft: rgba(180, 83, 9, 0.08);
+  --warn-line: rgba(180, 83, 9, 0.3);
+  --error: #dc2626;
+
+  /* On-accent surfaces (used by the CTA banner) */
+  --on-accent: #ffffff;
+  --invert-surface: #0a0a15;
+  --invert-fg: #ffffff;
 
   /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.1);
-  --shadow-card-hover:
-    0 20px 60px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(124, 58, 237, 0.12);
+  --shadow-xs: 0 1px 2px rgba(10, 10, 21, 0.04);
+  --shadow-sm: 0 2px 8px rgba(10, 10, 21, 0.06);
+  --shadow-md: 0 8px 32px rgba(10, 10, 21, 0.08);
+  --shadow-lg: 0 24px 80px rgba(10, 10, 21, 0.1);
+  --shadow-card-hover: 0 18px 44px rgba(10, 10, 21, 0.12), 0 0 0 1px rgba(124, 58, 237, 0.14);
 
-  /* Scroll progress */
-  --scroll-progress: 0%;
+  /* Layout rhythm */
+  --gutter: 1.25rem;
+  --shell: 72rem;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 1.75rem;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 2.5rem;
+  }
 }
 
 html.dark {
-  /* Cursor — white stands out clearly on dark backgrounds */
+  /* White stands out clearly on dark backgrounds */
   --cursor-color: #ffffff;
 
   --bg: #0c0e1d;
@@ -65,121 +189,137 @@ html.dark {
 
   --fg: #f3f5ff;
   --fg-2: #d7dcf6;
-  --fg-3: #b2b9de;
-  --fg-4: #8d95be;
+  --fg-3: #a8b0d8;
+  --fg-4: #7d86b0;
 
   --border: rgba(255, 255, 255, 0.12);
-  --border-2: rgba(255, 255, 255, 0.18);
+  --border-2: rgba(255, 255, 255, 0.2);
 
   --accent: #8b5cf6;
   --accent-2: #7c3aed;
-  --accent-soft: rgba(139, 92, 246, 0.1);
+  --accent-soft: rgba(139, 92, 246, 0.12);
+  --accent-line: rgba(139, 92, 246, 0.32);
   --accent-glow: rgba(139, 92, 246, 0.22);
-  --accent-text: #a78bfa;
+  --accent-text: #b9a5fd;
 
   --cyan: #22d3ee;
-  --cyan-soft: rgba(34, 211, 238, 0.08);
+  --cyan-soft: rgba(34, 211, 238, 0.1);
 
   --success: #34d399;
-  --success-soft: rgba(52, 211, 153, 0.08);
+  --success-soft: rgba(52, 211, 153, 0.1);
+  --warn: #fbbf24;
+  --warn-soft: rgba(251, 191, 36, 0.1);
+  --warn-line: rgba(251, 191, 36, 0.35);
+  --error: #f87171;
+
+  --on-accent: #ffffff;
+  --invert-surface: #ffffff;
+  --invert-fg: #0a0a15;
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.7);
-  --shadow-card-hover:
-    0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 92, 246, 0.2),
-    0 0 40px rgba(139, 92, 246, 0.07);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.65);
+  --shadow-card-hover: 0 18px 44px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(139, 92, 246, 0.24);
 }
 
 /* ═══════════════════════════════════════════════════════════
-   INTRO — hide content until JS decides to show it
-   IntroManager adds/removes this via sessionStorage check.
-   Uses :has() so no class needed on body.
+   INTRO — hide chrome + content until the intro curtain lifts.
+   IntroScreen also does this imperatively; the CSS covers the
+   window before its JS chunk has executed.
 ═══════════════════════════════════════════════════════════ */
-body:has(#intro-overlay) nav,
+body:has(#intro-overlay) > header,
 body:has(#intro-overlay) #page-content {
   visibility: hidden;
 }
 
 /* ═══════════════════════════════════════════════════════════
    BASE
+
+   Everything below lives in @layer base / @layer components on
+   purpose. Unlayered rules beat *all* layered Tailwind utilities,
+   so an unlayered `.btn { display: inline-flex }` silently defeated
+   `hidden`, `px-0`, `w-8` and friends — which is why the mobile
+   Resume button refused to hide and the icon buttons collapsed
+   their glyphs to zero width.
 ═══════════════════════════════════════════════════════════ */
-html {
-  /* No scroll-behavior: smooth — it fights GSAP ScrollTrigger scroll maths */
-  color-scheme: light;
-}
-html.dark {
-  color-scheme: dark;
-}
+@layer base {
+  html {
+    /* No scroll-behavior: smooth — it fights GSAP ScrollTrigger scroll maths */
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
 
-body {
-  background-color: var(--bg);
-  color: var(--fg);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: geometricPrecision;
-  overflow-x: hidden;
-  transition:
-    background-color 0.18s ease,
-    color 0.18s ease;
-}
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    transition: background-color 0.18s ease, color 0.18s ease;
+  }
 
-/* Custom cursor — hide native on pointer devices */
-@media (pointer: fine) {
-  *,
-  *::before,
-  *::after {
-    cursor: none !important;
+  /* Nothing may push the page sideways on small screens */
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  /* The custom cursor only replaces the native one once its JS has
+     mounted and confirmed a fine pointer. Previously this was applied
+     unconditionally, so a failed chunk left the page with no cursor. */
+  @media (pointer: fine) {
+    html.custom-cursor,
+    html.custom-cursor *,
+    html.custom-cursor *::before,
+    html.custom-cursor *::after {
+      cursor: none !important;
+    }
   }
 }
 
 /* ═══════════════════════════════════════════════════════════
    SCROLLBAR
 ═══════════════════════════════════════════════════════════ */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(124, 58, 237, 0.35);
-  border-radius: 0;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(124, 58, 237, 0.6);
+@layer base {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--accent-line);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+  }
+
+  /* ── Selection ── */
+  ::selection {
+    background: rgba(124, 58, 237, 0.2);
+    color: inherit;
+  }
+  .dark ::selection {
+    background: rgba(139, 92, 246, 0.28);
+    color: inherit;
+  }
+
+  /* ── Focus ── */
+  *:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   SELECTION
-═══════════════════════════════════════════════════════════ */
-::selection {
-  background: rgba(124, 58, 237, 0.18);
-  color: inherit;
-}
-.dark ::selection {
-  background: rgba(139, 92, 246, 0.22);
-  color: inherit;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FOCUS
-═══════════════════════════════════════════════════════════ */
-*:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-  border-radius: 0;
-}
-
-/* Global sharp-corner policy */
-[class*="rounded"] {
-  border-radius: 0 !important;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   KEYFRAMES
+   KEYFRAMES (component-level)
 ═══════════════════════════════════════════════════════════ */
 @keyframes blink {
   0%,
@@ -192,47 +332,59 @@ body {
 }
 @keyframes shimmer-sweep {
   from {
-    transform: translateX(-100%) skewX(-12deg);
+    transform: translate3d(-120%, 0, 0) skewX(-12deg);
   }
   to {
-    transform: translateX(300%) skewX(-12deg);
-  }
-}
-@keyframes cursor-blink {
-  0%,
-  100% {
-    border-right-color: var(--accent);
-  }
-  50% {
-    border-right-color: transparent;
+    transform: translate3d(320%, 0, 0) skewX(-12deg);
   }
 }
 @keyframes orb-drift {
   0%,
   100% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   33% {
-    transform: translate(40px, -30px) scale(1.05);
+    transform: translate3d(36px, -28px, 0) scale(1.05);
   }
   66% {
-    transform: translate(-20px, 20px) scale(0.97);
-  }
-}
-@keyframes slide-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(-18px, 18px, 0) scale(0.97);
   }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   UTILITY CLASSES
+   COMPONENT CLASSES
+   In @layer components so Tailwind utilities (a later layer) can
+   still override any single property on these elements.
 ═══════════════════════════════════════════════════════════ */
+@layer components {
+
+/* ── Sharp-corner policy ──
+   The design language is square. This used to be enforced with
+   [class*="rounded"] { border-radius: 0 !important }, which also
+   flattened the things that must stay circular — the cursor dot,
+   the ping halos, status dots. Opt in per element instead. */
+.rounded-none-force,
+.card,
+.btn,
+.chip,
+.tag,
+.field {
+  border-radius: 0;
+}
+
+/* ── Long URLs / handles must wrap rather than widen the layout ── */
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ── Page shell — one source of truth for width + gutters ── */
+.shell {
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
 
 /* ── Accent text ── */
 .text-gradient {
@@ -253,120 +405,141 @@ body {
   align-items: center;
   gap: 0.375rem;
   padding: 0.25rem 0.75rem;
-  border-radius: 0;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent-text);
   background: var(--accent-soft);
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  border: 1px solid var(--accent-line);
 }
 
 /* ── Card ── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 0;
-  transition:
-    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.12s ease;
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
+  transition: transform 0.22s var(--ease-out-quint), box-shadow 0.22s var(--ease-out-quint),
+    border-color 0.22s ease;
 }
-.card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(124, 58, 237, 0.25);
-  box-shadow: var(--shadow-card-hover);
+@media (hover: hover) {
+  .card:hover {
+    transform: translate3d(0, -4px, 0);
+    border-color: var(--accent-line);
+    box-shadow: var(--shadow-card-hover);
+  }
 }
 
 /* ── Card shimmer on hover ── */
 .card-shimmer::after {
   content: "";
   position: absolute;
-  top: 0;
+  inset-block: 0;
   left: 0;
   width: 35%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  transform: translateX(-100%) skewX(-12deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+  transform: translate3d(-120%, 0, 0) skewX(-12deg);
   pointer-events: none;
 }
-.card-shimmer:hover::after {
-  animation: shimmer-sweep 0.65s ease forwards;
+@media (hover: hover) {
+  .card-shimmer:hover::after {
+    animation: shimmer-sweep 0.6s var(--ease-out-quint) forwards;
+  }
 }
 
-/* ── Accent top bar ── */
+/* ── Accent top bar ──
+   `inset-x` is a Tailwind class name, not a CSS property; as a
+   declaration it was dropped, leaving the bar zero-width. */
 .accent-bar::before {
   content: "";
   position: absolute;
-  inset-x: 0;
+  left: 0;
+  right: 0;
   top: 0;
   height: 2px;
   background: var(--accent);
-  opacity: 0.7;
+  opacity: 0.8;
+  z-index: 1;
 }
 
-/* ── Button primary ── */
+/* ── Buttons ── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1.375rem;
-  border-radius: 0;
+  padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
-  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  line-height: 1.2;
   white-space: nowrap;
+  border: 1px solid transparent;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease,
+    box-shadow 0.18s ease, transform 0.18s var(--ease-out-quint);
+}
+.btn:disabled {
+  cursor: not-allowed;
 }
 .btn-primary {
   background: var(--accent);
   color: #fff;
-  border: 1px solid rgba(124, 58, 237, 0.6);
-  box-shadow:
-    0 4px 14px var(--accent-glow),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  position: relative;
-  overflow: hidden;
+  border-color: var(--accent);
+  box-shadow: 0 4px 14px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
-.btn-primary:hover {
-  background: var(--accent-2);
-  box-shadow:
-    0 8px 24px var(--accent-glow),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .btn-primary:hover {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+    box-shadow: 0 8px 22px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    transform: translate3d(0, -1px, 0);
+  }
 }
 .btn-ghost {
-  background: transparent;
+  background: var(--surface);
   color: var(--fg);
-  border: 1px solid var(--border);
+  border-color: var(--border);
 }
-.btn-ghost:hover {
-  border-color: rgba(124, 58, 237, 0.3);
-  background: var(--accent-soft);
-  color: var(--accent-text);
+@media (hover: hover) {
+  .btn-ghost:hover {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    transform: translate3d(0, -1px, 0);
+  }
+}
+/* High-contrast button for use on the inverted CTA banner */
+.btn-invert {
+  background: var(--invert-surface);
+  color: var(--invert-fg);
+  border-color: var(--invert-surface);
+}
+@media (hover: hover) {
+  .btn-invert:hover {
+    transform: translate3d(0, -1px, 0);
+    box-shadow: var(--shadow-md);
+  }
 }
 
 /* ── Tag / badge ── */
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.625rem;
-  border-radius: 0;
+  padding: 0.25rem 0.5rem;
   font-size: 0.72rem;
   font-weight: 500;
   color: var(--fg-2);
   background: var(--surface-2);
   border: 1px solid var(--border);
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
-.tag:hover {
-  border-color: rgba(124, 58, 237, 0.3);
-  background: var(--accent-soft);
-  color: var(--accent-text);
+@media (hover: hover) {
+  .tag:hover {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent-text);
+  }
 }
 
 /* ── Animated link underline ── */
@@ -377,21 +550,22 @@ body {
 .link-underline::after {
   content: "";
   position: absolute;
-  bottom: -1px;
+  bottom: -2px;
   left: 0;
   width: 0;
   height: 1px;
   background: var(--accent);
-  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 0.28s var(--ease-out-quint);
 }
-.link-underline:hover::after {
+.link-underline:hover::after,
+.link-underline:focus-visible::after {
   width: 100%;
 }
 
 /* ── Timeline vertical bar ── */
 .timeline-track {
-  background: var(--accent);
-  opacity: 0.4;
+  background: linear-gradient(to bottom, var(--accent), var(--accent-line) 70%, transparent);
+  opacity: 0.65;
 }
 
 /* ── Noise grain overlay ── */
@@ -400,29 +574,29 @@ body {
   position: absolute;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  opacity: 0.025;
+  opacity: 0.03;
   pointer-events: none;
-  border-radius: 0;
   z-index: 0;
 }
 
 /* ── Dot grid background ── */
 .dot-grid {
-  background-image: none;
+  background-image: radial-gradient(var(--border-2) 1px, transparent 1px);
+  background-size: 22px 22px;
 }
 
 /* ── Section number ── */
 .section-num {
-  font-family: var(--font-outfit), sans-serif;
-  font-size: clamp(4rem, 10vw, 8rem);
-  font-weight: 900;
+  font-family: var(--font-outfit);
+  font-size: clamp(3.5rem, 10vw, 8rem);
+  font-weight: 700;
   line-height: 1;
   color: var(--fg);
-  opacity: 0.03;
+  opacity: 0.04;
   pointer-events: none;
   user-select: none;
   position: absolute;
-  top: -0.15em;
+  top: -0.12em;
   right: 0;
   max-width: 40%;
   overflow: hidden;
@@ -431,10 +605,11 @@ body {
 /* ── Glow orb ── */
 .orb {
   position: absolute;
-  border-radius: 0;
-  filter: blur(80px);
+  border-radius: 50%;
+  filter: blur(70px);
   pointer-events: none;
-  animation: orb-drift 12s ease-in-out infinite;
+  animation: orb-drift 14s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* ── Input field ── */
@@ -442,15 +617,16 @@ body {
   width: 100%;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 0;
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 1rem; /* ≥16px stops iOS Safari zooming on focus */
   color: var(--fg);
   outline: none;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+@media (min-width: 640px) {
+  .field {
+    font-size: 0.9rem;
+  }
 }
 .field::placeholder {
   color: var(--fg-4);
@@ -459,4 +635,36 @@ body {
   border-color: var(--accent);
   background: var(--surface);
   box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.field:disabled {
+  opacity: 0.6;
+}
+
+/* ── Marquee-free horizontal scroller for overflow content ── */
+.scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+} /* end @layer components */
+
+/* ═══════════════════════════════════════════════════════════
+   REDUCED MOTION
+   Honour the OS setting globally — the JS layers check it too,
+   but this catches every CSS animation in one place.
+═══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .card:hover,
+  .btn:hover {
+    transform: none;
+  }
 }

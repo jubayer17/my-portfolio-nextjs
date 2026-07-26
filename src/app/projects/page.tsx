@@ -1,35 +1,42 @@
-import ProjectsGrid from "@/components/projects/ProjectsGrid";
-import { resume } from "@/data/resume";
-import AnimatedSection from "@/components/ui/AnimatedSection";
 import { Layers } from "lucide-react";
 
-export const metadata = { title: "Projects" };
+import ProjectsGrid from "@/components/projects/ProjectsGrid";
+import AnimatedSection from "@/components/ui/AnimatedSection";
+import { resume } from "@/data/resume";
+
+export const metadata = {
+  title: "Projects",
+  description:
+    "Enterprise ERP, salon and restaurant management systems, job marketplaces, real-estate platforms, and developer tools built by Jubayer Ahmed.",
+};
 
 export default function ProjectsPage() {
   return (
-    <main id="content" className="mx-auto max-w-6xl px-6 py-14 md:px-6 md:py-20">
-
+    <main id="content" className="shell py-12 md:py-16">
       <AnimatedSection>
         <span className="chip">
-          <Layers className="h-3 w-3" />
+          <Layers className="h-3 w-3" aria-hidden="true" />
           Portfolio
         </span>
         <h1
-          className="font-outfit mt-4 text-4xl font-black tracking-tight md:text-5xl"
+          className="font-outfit mt-4 text-[clamp(2rem,6vw,3rem)] font-bold leading-tight tracking-tight"
           style={{ color: "var(--fg)" }}
         >
           Projects
         </h1>
-        <p className="mt-3 max-w-prose text-sm leading-relaxed md:text-base" style={{ color: "var(--fg-3)" }}>
-          A curated set of builds focused on maintainable architecture, polished UI,
-          and practical outcomes.
+        <p
+          className="mt-3 max-w-prose text-sm leading-relaxed md:text-base"
+          style={{ color: "var(--fg-3)" }}
+        >
+          {resume.projects.length} builds spanning multi-tenant ERP, salon and restaurant
+          operations, job marketplaces, real estate, and competitive-programming tooling —
+          each focused on maintainable architecture and practical outcomes.
         </p>
       </AnimatedSection>
 
-      <AnimatedSection className="mt-10" delay={0.1}>
+      <AnimatedSection className="mt-9" delay={0.08}>
         <ProjectsGrid projects={resume.projects} />
       </AnimatedSection>
-
     </main>
   );
 }

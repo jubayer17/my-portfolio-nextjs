@@ -3,84 +3,72 @@
 import { useEffect, useState } from "react";
 
 interface TypewriterTextProps {
-  texts: string[];
-  className?: string;
-  speed?: number;
-  deleteSpeed?: number;
-  pauseDuration?: number;
+  readonly texts: string[];
+  readonly className?: string;
+  readonly speed?: number;
+  readonly deleteSpeed?: number;
+  readonly pauseDuration?: number;
 }
 
 export default function TypewriterText({
   texts,
   className = "",
-  speed = 75,
-  deleteSpeed = 38,
-  pauseDuration = 2200,
+  speed = 62,
+  deleteSpeed = 28,
+  pauseDuration = 1900,
 }: TypewriterTextProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [displayText, setDisplayText] = useState("");
-  const [phase, setPhase] = useState<"typing" | "pausing" | "deleting">("typing");
-  const [isVisible, setIsVisible] = useState(true);
+  const [index, setIndex] = useState(0);
+  const [display, setDisplay] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [active, setActive] = useState(true);
 
+  // Pause the loop while the tab is hidden so it isn't burning timers.
   useEffect(() => {
-    const onVisibilityChange = () => {
-      setIsVisible(document.visibilityState === "visible");
-    };
-
-    onVisibilityChange();
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
+    const onChange = () => setActive(document.visibilityState === "visible");
+    document.addEventListener("visibilitychange", onChange);
+    return () => document.removeEventListener("visibilitychange", onChange);
   }, []);
 
   useEffect(() => {
-    if (!isVisible) {
-      return;
-    }
+    if (!active || texts.length === 0) return;
 
-    const current = texts[currentIndex];
+    const current = texts[index % texts.length];
+    const atEnd = display.length >= current.length;
+    const atStart = display.length === 0;
 
-    if (phase === "typing") {
-      if (displayText.length < current.length) {
-        const t = setTimeout(
-          () => setDisplayText(current.slice(0, displayText.length + 1)),
-          speed
-        );
-        return () => clearTimeout(t);
+    let delay: number;
+    if (deleting) delay = atStart ? 0 : deleteSpeed;
+    else delay = atEnd ? pauseDuration : speed;
+
+    // Every transition happens inside the timer callback. Advancing state
+    // straight from the effect body caused a synchronous cascading render
+    // on each character.
+    const timer = setTimeout(() => {
+      if (deleting) {
+        if (atStart) {
+          setIndex((prev) => (prev + 1) % texts.length);
+          setDeleting(false);
+        } else {
+          setDisplay(current.slice(0, display.length - 1));
+        }
+      } else if (atEnd) {
+        setDeleting(true);
       } else {
-        const t = setTimeout(() => setPhase("pausing"), pauseDuration);
-        return () => clearTimeout(t);
+        setDisplay(current.slice(0, display.length + 1));
       }
-    }
+    }, delay);
 
-    if (phase === "pausing") {
-      const t = setTimeout(() => setPhase("deleting"), 80);
-      return () => clearTimeout(t);
-    }
-
-    if (phase === "deleting") {
-      if (displayText.length > 0) {
-        const t = setTimeout(
-          () => setDisplayText(displayText.slice(0, -1)),
-          deleteSpeed
-        );
-        return () => clearTimeout(t);
-      } else {
-        setCurrentIndex((prev) => (prev + 1) % texts.length);
-        setPhase("typing");
-      }
-    }
-  }, [displayText, phase, currentIndex, texts, speed, deleteSpeed, pauseDuration, isVisible]);
+    return () => clearTimeout(timer);
+  }, [display, deleting, index, texts, speed, deleteSpeed, pauseDuration, active]);
 
   return (
     <span className={className}>
-      {displayText}
+      <span className="sr-only">{texts.join(". ")}</span>
+      <span aria-hidden="true">{display}</span>
       <span
-        className="cursor-blink ml-[2px] inline-block h-[0.85em] w-[2px] translate-y-[1px] rounded-sm align-middle"
-        style={{ background: "var(--accent)" }}
         aria-hidden="true"
+        className="cursor-blink ml-[2px] inline-block h-[0.85em] w-[2px] translate-y-[1px] align-middle"
+        style={{ background: "var(--accent)" }}
       />
     </span>
   );

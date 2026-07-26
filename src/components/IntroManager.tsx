@@ -1,64 +1,80 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import gsap from "gsap";
 
-const DARK: React.CSSProperties = { background: "#0c0e1d" };
-
-// Loading fallback while the chunk downloads — must match DARK so no flash
 const IntroScreen = dynamic(() => import("@/components/ui/IntroScreen"), {
   ssr: false,
-  loading: () => <div className="fixed inset-0 z-[9999]" style={DARK} />,
+  loading: () => <div className="fixed inset-0 z-9999" style={{ background: "#05080f" }} />,
 });
 
-type State = "cover" | "intro" | "done";
+/**
+ * Whether the intro should play is a client-only fact read from the
+ * environment, so it comes through useSyncExternalStore rather than a
+ * setState-in-effect (which triggered a cascading render on every load).
+ */
+const noopSubscribe = () => () => {};
+
+function getClientSnapshot() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+  try {
+    return sessionStorage.getItem("intro_seen") !== "1";
+  } catch {
+    // Private mode — never gate the site behind an intro we can't remember.
+    return false;
+  }
+}
+
+const getServerSnapshot = () => false;
 
 export default function IntroManager() {
-  const [state, setState] = useState<State>("cover");
+  const playIntro = useSyncExternalStore(noopSubscribe, getClientSnapshot, getServerSnapshot);
+  const [dismissed, setDismissed] = useState(false);
   const coverRef = useRef<HTMLDivElement>(null);
 
+  // Returning visitor: lift the plain cover straight away.
   useEffect(() => {
-    const seen = sessionStorage.getItem("intro_seen");
-    if (!seen) {
-      setState("intro");
-    } else {
-      // Returning visitor — fade the cover out, then remove it
-      if (coverRef.current) {
-        gsap.to(coverRef.current, {
-          autoAlpha: 0,
-          duration: 0.22,
-          ease: "power1.out",
-          onComplete: () => setState("done"),
-        });
-      } else {
-        setState("done");
-      }
-    }
-  }, []);
+    if (playIntro || dismissed) return;
 
-  // Nothing to render once intro is finished
-  if (state === "done") return null;
+    const cover = coverRef.current;
+    if (!cover) return;
 
-  // Always keep a dark cover in the DOM until the intro is fully loaded.
-  // The cover (z-[9998]) sits below IntroScreen (z-[9999]) so there is
-  // never a transparent frame between the two.
+    const tween = gsap.to(cover, {
+      autoAlpha: 0,
+      duration: 0.16,
+      ease: "power1.out",
+      onComplete: () => setDismissed(true),
+    });
+
+    return () => {
+      tween.kill();
+    };
+  }, [playIntro, dismissed]);
+
+  if (dismissed) return null;
+
   return (
     <>
-      {/* Persistent dark backdrop — prevents any flash while JS loads */}
+      {/* Backdrop that prevents a flash while the intro chunk loads.
+          Uses var(--bg) so light-theme visitors no longer get a black flash —
+          the head script has already resolved the theme by this point. */}
       <div
         ref={coverRef}
-        className="fixed inset-0 z-[9998]"
-        style={DARK}
+        className="fixed inset-0 z-9998"
+        style={{ background: "var(--bg)" }}
         aria-hidden="true"
       />
 
-      {/* Intro screen — rendered on top once the chunk is ready */}
-      {state === "intro" && (
+      {playIntro && (
         <IntroScreen
           onComplete={() => {
-            sessionStorage.setItem("intro_seen", "1");
-            setState("done");
+            try {
+              sessionStorage.setItem("intro_seen", "1");
+            } catch {
+              /* ignore */
+            }
+            setDismissed(true);
           }}
         />
       )}

@@ -1,6 +1,13 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // A stray lockfile in the parent directory made Turbopack infer the wrong
+  // workspace root. Pin it to this project.
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
+
   // Gzip all responses
   compress: true,
 

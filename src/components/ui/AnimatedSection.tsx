@@ -7,19 +7,19 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 interface Props {
-  children: React.ReactNode;
-  className?: string;
-  delay?: number;
-  direction?: "up" | "left" | "right" | "scale" | "fade";
-  once?: boolean;
+  readonly children: React.ReactNode;
+  readonly className?: string;
+  readonly delay?: number;
+  readonly direction?: "up" | "left" | "right" | "scale" | "fade";
+  readonly once?: boolean;
 }
 
-const V = {
-  up: { hidden: { opacity: 0, y: 32 }, visible: { opacity: 1, y: 0 } },
-  left: { hidden: { opacity: 0, x: -32 }, visible: { opacity: 1, x: 0 } },
-  right: { hidden: { opacity: 0, x: 32 }, visible: { opacity: 1, x: 0 } },
-  scale: { hidden: { opacity: 0, scale: 0.93 }, visible: { opacity: 1, scale: 1 } },
-  fade: { hidden: { opacity: 0 }, visible: { opacity: 1 } },
+const FROM: Record<NonNullable<Props["direction"]>, gsap.TweenVars> = {
+  up: { y: 24 },
+  left: { x: -24 },
+  right: { x: 24 },
+  scale: { scale: 0.96 },
+  fade: {},
 };
 
 export default function AnimatedSection({
@@ -40,32 +40,22 @@ export default function AnimatedSection({
       return;
     }
 
-    const fromVars = V[direction].hidden;
-    const toVars = V[direction].visible;
-
     const context = gsap.context(() => {
       gsap.fromTo(
         element,
+        { autoAlpha: 0, ...FROM[direction] },
         {
-          autoAlpha: fromVars.opacity,
-          x: ("x" in fromVars ? fromVars.x : 0) ?? 0,
-          y: ("y" in fromVars ? fromVars.y : 0) ?? 0,
-          scale: ("scale" in fromVars ? fromVars.scale : 1) ?? 1,
-        },
-        {
-          autoAlpha: toVars.opacity,
-          x: ("x" in toVars ? toVars.x : 0) ?? 0,
-          y: ("y" in toVars ? toVars.y : 0) ?? 0,
-          scale: ("scale" in toVars ? toVars.scale : 1) ?? 1,
-          duration: 0.7,
+          autoAlpha: 1,
+          x: 0,
+          y: 0,
+          scale: 1,
+          // Was 0.7s, which read as sluggish on a page of stacked sections.
+          duration: 0.45,
           delay,
           ease: "power3.out",
           overwrite: "auto",
-          scrollTrigger: {
-            trigger: element,
-            start: "top 86%",
-            once,
-          },
+          clearProps: "transform",
+          scrollTrigger: { trigger: element, start: "top 88%", once },
         }
       );
     }, element);

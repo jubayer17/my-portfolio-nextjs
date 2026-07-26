@@ -1,42 +1,42 @@
-"use client";
+import { ArrowUpRight } from "lucide-react";
 
-interface Link { label: string; href: string }
+interface Link {
+  label: string;
+  href: string;
+}
 
-export default function ProfileLinks({ links }: { links: Link[] }) {
+export default function ProfileLinks({ links }: { links: readonly Link[] }) {
   return (
-    <div className="mt-5 space-y-2">
+    <ul className="mt-5 space-y-2">
       {links.map((l) => (
-        <a
-          key={l.href}
-          href={l.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="profile-link flex items-center justify-between rounded-xl border px-4 py-3 text-sm font-medium transition-all"
-          style={{
-            background: "var(--surface-2)",
-            borderColor: "var(--border)",
-            color: "var(--fg-2)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "rgba(124,58,237,0.3)";
-            e.currentTarget.style.background = "var(--accent-soft)";
-            e.currentTarget.style.color = "var(--accent-text)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "var(--border)";
-            e.currentTarget.style.background = "var(--surface-2)";
-            e.currentTarget.style.color = "var(--fg-2)";
-          }}
-        >
-          <span className="font-bold">{l.label}</span>
-          <span
-            className="max-w-[150px] truncate font-mono text-xs"
-            style={{ color: "var(--fg-4)" }}
+        <li key={l.href}>
+          <a
+            href={l.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center justify-between gap-3 border px-3.5 py-2.5 text-sm font-medium transition-colors duration-200 hover:border-[var(--accent-line)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)]"
+            style={{
+              background: "var(--surface-2)",
+              borderColor: "var(--border)",
+              color: "var(--fg-2)",
+            }}
           >
-            {l.href.replace("https://", "")}
-          </span>
-        </a>
+            <span className="shrink-0 font-bold">{l.label}</span>
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span
+                className="truncate font-mono text-xs"
+                style={{ color: "var(--fg-4)" }}
+              >
+                {l.href.replace(/^https?:\/\/(www\.)?/, "")}
+              </span>
+              <ArrowUpRight
+                className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </span>
+          </a>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

@@ -1,9 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext, useCallback, useContext, useMemo, useSyncExternalStore,
+} from "react";
 
 interface ThemeContextType {
   darkMode: boolean;
+  mounted: boolean;
   toggleDarkMode: () => void;
 }
 
@@ -17,55 +20,74 @@ export const useTheme = () => {
   return context;
 };
 
-interface ThemeProviderProps {
-  children: React.ReactNode;
+/**
+ * The <html> class list is the source of truth — the blocking script in
+ * <head> sets it before first paint, so React reads it rather than
+ * recomputing (which is what caused the light-theme flash).
+ */
+const listeners = new Set<() => void>();
+
+function emit() {
+  listeners.forEach((fn) => fn());
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [mounted, setMounted] = useState(false);
+function subscribe(onChange: () => void) {
+  listeners.add(onChange);
 
-  useEffect(() => {
-    setMounted(true);
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
 
-    const savedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
+  // Follow the OS only while the visitor has made no explicit choice.
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  const onSystemChange = (e: MediaQueryListEvent) => {
+    if (localStorage.getItem("theme")) return;
+    applyTheme(e.matches);
+  };
+  mq.addEventListener("change", onSystemChange);
 
-    const shouldBeDark = savedTheme === "dark" || (!savedTheme && prefersDark);
-    setDarkMode(shouldBeDark);
+  return () => {
+    listeners.delete(onChange);
+    observer.disconnect();
+    mq.removeEventListener("change", onSystemChange);
+  };
+}
 
-    if (shouldBeDark) {
-      document.documentElement.classList.add("dark");
-      document.documentElement.setAttribute("data-theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      document.documentElement.setAttribute("data-theme", "light");
+const getSnapshot = () => document.documentElement.classList.contains("dark");
+// The server can't know the visitor's theme; light is the document default.
+const getServerSnapshot = () => false;
+
+function applyTheme(dark: boolean) {
+  const el = document.documentElement;
+  el.classList.toggle("dark", dark);
+  el.dataset.theme = dark ? "dark" : "light";
+  emit();
+}
+
+export const ThemeProvider: React.FC<Readonly<{ children: React.ReactNode }>> = ({ children }) => {
+  const darkMode = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const mounted = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false
+  );
+
+  const toggleDarkMode = useCallback(() => {
+    const next = !document.documentElement.classList.contains("dark");
+    try {
+      localStorage.setItem("theme", next ? "dark" : "light");
+    } catch {
+      /* private mode — the theme just won't persist */
     }
+    applyTheme(next);
   }, []);
 
-  const toggleDarkMode = () => {
-    if (!mounted) return;
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    localStorage.setItem("theme", newMode ? "dark" : "light");
-
-    if (newMode) {
-      document.documentElement.classList.add("dark");
-      document.documentElement.setAttribute("data-theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      document.documentElement.setAttribute("data-theme", "light");
-    }
-  };
-
-  const value = {
-    darkMode,
-    toggleDarkMode,
-  };
-
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  const value = useMemo(
+    () => ({ darkMode, mounted, toggleDarkMode }),
+    [darkMode, mounted, toggleDarkMode]
   );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };

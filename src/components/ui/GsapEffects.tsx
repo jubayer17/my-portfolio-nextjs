@@ -7,6 +7,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Skip trigger recalculation while a fast scroll is still in flight.
+ScrollTrigger.config({ ignoreMobileResize: true });
+
 export default function GsapEffects() {
   const pathname = usePathname();
 
@@ -31,7 +34,11 @@ export default function GsapEffects() {
 
         if (inView) {
           // Already visible — animate gently from current position, no pre-hide
-          gsap.from(el, { y: y * 0.4, autoAlpha: 0, duration: 0.45, ease: "power3.out", overwrite: "auto" });
+          gsap.from(el, {
+            y: y * 0.4, autoAlpha: 0,
+            duration: 0.38, ease: "power3.out",
+            overwrite: "auto", clearProps: "transform",
+          });
         } else {
           // Below the fold — safe to pre-hide and reveal on scroll
           gsap.fromTo(
@@ -39,9 +46,10 @@ export default function GsapEffects() {
             { autoAlpha: 0, y },
             {
               autoAlpha: 1, y: 0,
-              duration: 0.5,
+              duration: 0.42,
               ease: "power3.out",
               overwrite: "auto",
+              clearProps: "transform",
               scrollTrigger: { trigger: el, start: "top 90%", once: true },
             }
           );
@@ -56,17 +64,22 @@ export default function GsapEffects() {
         const inView = container.getBoundingClientRect().top < window.innerHeight * 0.92;
 
         if (inView) {
-          gsap.from(children, { autoAlpha: 0, y: 18, duration: 0.4, ease: "power3.out", stagger: 0.055, overwrite: "auto" });
+          gsap.from(children, {
+            autoAlpha: 0, y: 16,
+            duration: 0.34, ease: "power3.out", stagger: 0.045,
+            overwrite: "auto", clearProps: "transform",
+          });
         } else {
           gsap.fromTo(
             children,
-            { autoAlpha: 0, y: 22 },
+            { autoAlpha: 0, y: 20 },
             {
               autoAlpha: 1, y: 0,
-              duration: 0.45,
+              duration: 0.38,
               ease: "power3.out",
-              stagger: 0.055,
+              stagger: 0.045,
               overwrite: "auto",
+              clearProps: "transform",
               scrollTrigger: { trigger: container, start: "top 90%", once: true },
             }
           );

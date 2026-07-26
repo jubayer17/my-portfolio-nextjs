@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 
 const WORDS = [
@@ -17,9 +17,12 @@ const WORDS = [
 ] as const;
 
 const TOTAL   = WORDS.length;
-const HOLD_MS = 78;
-const IN_DUR  = 0.05;
-const OUT_DUR = 0.038;
+// Trimmed from 78/0.05/0.038 — the whole word cycle now lands in ~0.75s
+// instead of ~1.3s, and the curtain lift below was halved to match.
+const HOLD_MS = 44;
+const IN_DUR  = 0.036;
+const OUT_DUR = 0.028;
+const LAST_HOLD_MS = 300;
 
 export default function IntroScreen({ onComplete }: { onComplete: () => void }) {
   const overlayRef  = useRef<HTMLDivElement>(null);
@@ -37,28 +40,44 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
   const timersRef   = useRef<number[]>([]);
   const exitCalled  = useRef(false);
 
-  const addTimer    = (id: number) => { timersRef.current.push(id); };
-  const clearTimers = () => {
-    timersRef.current.forEach((id) => window.clearTimeout(id));
-    timersRef.current = [];
-  };
+  // The skip button needs to reach the exit routine, which now lives inside
+  // the effect (as a plain recursive function) rather than a useCallback that
+  // mutated refs and referenced itself.
+  const exitRef = useRef<() => void>(() => {});
 
-  const runExit = useCallback(() => {
-    if (exitCalled.current) return;
-    exitCalled.current = true;
-    clearTimers();
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      onComplete();
+      return;
+    }
+
+    const addTimer = (id: number) => {
+      timersRef.current.push(id);
+    };
+    const clearTimers = () => {
+      timersRef.current.forEach((id) => window.clearTimeout(id));
+      timersRef.current = [];
+    };
+
+    const runExit = () => {
+      if (exitCalled.current) return;
+      exitCalled.current = true;
+      clearTimers();
 
     gsap.killTweensOf([orb1Ref.current, orb2Ref.current, orb3Ref.current, ringRef.current]);
 
     const header      = document.querySelector("header") as HTMLElement | null;
     const pageContent = document.getElementById("page-content");
 
-    // Prepare page — hidden but positioned, ready to animate
+    // Prepare page — hidden but positioned, ready to animate.
+    // No blur filters here: blurring a full page every frame is the single
+    // most expensive thing the old intro did, and it showed on mid-range phones.
     if (header) {
-      gsap.set(header, { visibility: "visible", autoAlpha: 0, y: -50, filter: "blur(6px)" });
+      gsap.set(header, { visibility: "visible", autoAlpha: 0, y: -28 });
     }
     if (pageContent) {
-      gsap.set(pageContent, { visibility: "visible", autoAlpha: 0, scale: 1.06, filter: "blur(12px)" });
+      gsap.set(pageContent, { visibility: "visible", autoAlpha: 0, scale: 1.03 });
     }
 
     const tl = gsap.timeline();
@@ -68,43 +87,44 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
       [wordRef.current, topLineRef.current, botLineRef.current,
        counterRef.current, skipRef.current, ringRef.current,
        orb1Ref.current, orb2Ref.current, orb3Ref.current],
-      { autoAlpha: 0, duration: 0.18, ease: "power3.in", stagger: 0.006 }
+      { autoAlpha: 0, duration: 0.13, ease: "power3.in", stagger: 0.004 }
     );
 
     // 2. Seam glow appears at bottom edge of overlay — signals the curtain is about to lift
-    tl.to(seamRef.current, { autoAlpha: 1, duration: 0.22, ease: "power2.out" }, "-=0.05");
+    tl.to(seamRef.current, { autoAlpha: 1, duration: 0.14, ease: "power2.out" }, "-=0.04");
 
     // 3. Curtain slides UP off screen
     tl.to(
       overlayRef.current,
       {
         yPercent: -100,
-        duration: 1.0,
+        duration: 0.62,
         ease: "expo.inOut",
         onStart() {
-          // Header drops in from above as curtain rises
           if (header) {
             gsap.to(header, {
-              autoAlpha: 1, y: 0, filter: "blur(0px)",
-              duration: 0.65, delay: 0.18, ease: "expo.out",
+              autoAlpha: 1, y: 0,
+              duration: 0.42, delay: 0.1, ease: "expo.out",
             });
           }
-          // Page zooms into focus slightly behind the rising curtain
           if (pageContent) {
             gsap.to(pageContent, {
-              autoAlpha: 1, scale: 1, filter: "blur(0px)",
-              duration: 0.85, delay: 0.22, ease: "expo.out",
+              autoAlpha: 1, scale: 1,
+              duration: 0.5, delay: 0.12, ease: "expo.out",
+              clearProps: "transform",
               onComplete,
             });
           }
         },
       },
-      "-=0.04"
-    );
-  }, [onComplete]);
+        "-=0.03"
+      );
+    };
 
-  const showWord = useCallback((idx: number) => {
-    if (exitCalled.current) return;
+    exitRef.current = runExit;
+
+    const showWord = (idx: number) => {
+      if (exitCalled.current) return;
 
     const { text, dir } = WORDS[idx];
     const isLast = idx === TOTAL - 1;
@@ -144,7 +164,7 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
     );
 
     if (isLast) {
-      tl.call(() => { addTimer(window.setTimeout(runExit, 520)); });
+      tl.call(() => { addTimer(window.setTimeout(runExit, LAST_HOLD_MS)); });
     } else {
       tl.to(wordRef.current, {
         clipPath: "inset(0% 0% 110% 0%)",
@@ -152,16 +172,9 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
         ease: "power3.in",
         delay: HOLD_MS / 1000,
       });
-      tl.call(() => showWord(idx + 1));
-    }
-  }, [runExit]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      onComplete();
-      return;
-    }
+        tl.call(() => showWord(idx + 1));
+      }
+    };
 
     // Hide page until intro completes
     const header = document.querySelector("header") as HTMLElement | null;
@@ -221,7 +234,7 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
 
     addTimer(t);
     return () => { clearTimers(); };
-  }, [showWord, onComplete]);
+  }, [onComplete]);
 
   return (
     <>
@@ -238,7 +251,7 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
       <div
         id="intro-overlay"
         ref={overlayRef}
-        className="fixed inset-0 z-[9999] overflow-hidden"
+        className="fixed inset-0 z-9999 overflow-hidden"
         style={{ background: "#05080f", clipPath: "circle(120% at 50% 50%)" }}
         aria-hidden="true"
       >
@@ -419,7 +432,7 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
         {/* ── Skip — bottom right ── */}
         <button
           ref={skipRef}
-          onClick={runExit}
+          onClick={() => exitRef.current()}
           className="absolute bottom-6 right-8 cursor-pointer font-mono text-[10px] uppercase tracking-[0.32em] transition-opacity hover:opacity-60"
           style={{ zIndex: 20, color: "rgba(255,255,255,0.11)" }}
         >

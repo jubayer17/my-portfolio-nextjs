@@ -1,21 +1,109 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { ExternalLink, ArrowRight, Calendar } from "lucide-react";
-import type { ProjectItem } from "@/data/resume";
+
+import { PROJECT_DETAILS_ENABLED, type ProjectItem } from "@/data/resume";
 import TechBadge from "@/components/ui/TechBadge";
+import StatusBadge from "@/components/ui/StatusBadge";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+const COVER_CLASS = "relative block overflow-hidden border-b";
+const COVER_STYLE = { borderColor: "var(--border)", background: "var(--surface-2)" };
+
+/**
+ * The cover points at the case study when those pages exist, otherwise at the
+ * live site — and becomes an inert wrapper when there's neither, so we never
+ * render an anchor that goes nowhere.
+ */
+function CoverFrame({
+  slug,
+  live,
+  children,
+}: Readonly<{ slug: string; live?: string; children: React.ReactNode }>) {
+  if (PROJECT_DETAILS_ENABLED) {
+    return (
+      <Link
+        href={`/projects/${slug}`}
+        className={COVER_CLASS}
+        style={COVER_STYLE}
+        tabIndex={-1}
+        aria-hidden="true"
+      >
+        {children}
+      </Link>
+    );
+  }
+
+  if (live) {
+    return (
+      <a
+        href={live}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={COVER_CLASS}
+        style={COVER_STYLE}
+        tabIndex={-1}
+        aria-hidden="true"
+      >
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <div className={COVER_CLASS} style={COVER_STYLE}>
+      {children}
+    </div>
+  );
+}
+
+/** Same resolution for the heading, including the stretched card overlay. */
+function CardTitleLink({
+  slug,
+  live,
+  children,
+}: Readonly<{ slug: string; live?: string; children: React.ReactNode }>) {
+  const className =
+    "transition-colors duration-200 hover:text-[var(--accent-text)] focus-visible:text-[var(--accent-text)]";
+  // Stretches the link over the whole card without swallowing the
+  // action buttons below (which are z-raised).
+  const overlay = <span className="absolute inset-0 z-0" aria-hidden="true" />;
+
+  if (PROJECT_DETAILS_ENABLED) {
+    return (
+      <Link href={`/projects/${slug}`} className={className}>
+        {overlay}
+        {children}
+      </Link>
+    );
+  }
+
+  if (live) {
+    return (
+      <a href={live} target="_blank" rel="noopener noreferrer" className={className}>
+        {overlay}
+        {children}
+      </a>
+    );
+  }
+
+  return <>{children}</>;
+}
 
 export default function ProjectsGrid({ projects }: { projects: readonly ProjectItem[] }) {
   const reduceMotion = useReducedMotion();
 
-  const categories = useMemo(() => {
-    const unique = Array.from(new Set(projects.map((p) => p.category)));
-    return ["All", ...unique] as const;
-  }, [projects]);
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(projects.map((p) => p.category)))],
+    [projects]
+  );
 
-  const [active, setActive] = useState<(typeof categories)[number]>("All");
+  const [active, setActive] = useState<string>("All");
 
   const filtered = useMemo(
     () => (active === "All" ? projects : projects.filter((p) => p.category === active)),
@@ -23,87 +111,94 @@ export default function ProjectsGrid({ projects }: { projects: readonly ProjectI
   );
 
   return (
-    <section aria-label="Projects list" className="space-y-8">
+    <LazyMotion features={domAnimation} strict>
+      <section aria-label="Projects" className="space-y-7">
 
-      {/* Filter pills */}
-      <div className="flex flex-wrap items-center gap-2">
-        {categories.map((c) => {
-          const selected = c === active;
-          return (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setActive(c)}
-              className="relative rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-200"
-              style={{ color: selected ? "var(--fg)" : "var(--fg-3)" }}
-              aria-pressed={selected}
-            >
-              <span className="relative z-10">{c}</span>
-              {selected && (
-                <motion.span
-                  layoutId="filter-bg"
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)",
-                    boxShadow: "var(--shadow-xs)",
-                  }}
-                  transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Grid */}
-      <motion.div
-        layout
-        className="grid gap-5 md:grid-cols-2"
-        transition={reduceMotion ? { duration: 0 } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <AnimatePresence mode="popLayout" initial={false}>
-          {filtered.map((p) => {
-            const isFrontendOnly = p.slug === "restrocore";
+        {/* ── Filter pills ── */}
+        <div
+          className="scroll-x -mx-1 flex items-center gap-2 px-1 pb-1"
+          role="group"
+          aria-label="Filter projects by category"
+        >
+          {categories.map((c) => {
+            const selected = c === active;
             return (
-            <motion.div
-              key={p.slug}
-              layout
-              initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <article className="card card-shimmer group relative flex h-full flex-col p-6 md:p-7">
-
-                {/* Frontend-only: green border ring overlay (bypasses .card CSS) */}
-                {isFrontendOnly && (
-                  <span
-                    className="pointer-events-none absolute inset-0 z-10"
-                    style={{ border: "1.5px solid rgba(245,158,11,0.55)" }}
+              <button
+                key={c}
+                type="button"
+                onClick={() => setActive(c)}
+                aria-pressed={selected}
+                className="relative shrink-0 whitespace-nowrap px-3.5 py-2 text-sm font-semibold transition-colors duration-200"
+                style={{ color: selected ? "var(--accent-text)" : "var(--fg-3)" }}
+              >
+                <span className="relative z-10">{c}</span>
+                {selected && (
+                  <m.span
+                    layoutId="filter-bg"
+                    className="absolute inset-0"
+                    style={{
+                      background: "var(--accent-soft)",
+                      border: "1px solid var(--accent-line)",
+                    }}
+                    transition={
+                      reduceMotion ? { duration: 0 } : { duration: 0.24, ease: EASE }
+                    }
                   />
                 )}
+              </button>
+            );
+          })}
+          <span className="ml-auto shrink-0 pl-3 font-mono text-xs" style={{ color: "var(--fg-4)" }}>
+            {filtered.length}/{projects.length}
+          </span>
+        </div>
 
-                {/* Frontend-only: top accent bar */}
-                {isFrontendOnly && (
-                  <span
-                    className="absolute inset-x-0 top-0 z-10 h-[2px]"
-                    style={{ background: "linear-gradient(90deg, #f59e0b, rgba(245,158,11,0.15))" }}
-                  />
-                )}
+        {/* ── Grid ── */}
+        <m.div layout className="grid gap-5 md:grid-cols-2">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {filtered.map((p) => {
+              const live = p.links.find((l) => l.label === "Live");
+              const cover = p.images?.[0];
 
-                {/* Hover accent overlay */}
-                <div
-                  className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                  style={{ background: isFrontendOnly ? "rgba(245,158,11,0.05)" : "var(--accent-soft)" }}
-                />
+              return (
+                <m.article
+                  key={p.slug}
+                  layout
+                  initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.26, ease: EASE }}
+                  className="card group relative flex h-full flex-col"
+                >
+                  {/* Cover — object-contain so wide screenshots aren't cropped */}
+                  <CoverFrame slug={p.slug} live={live?.href}>
+                    <div className="relative aspect-[16/9]">
+                      {cover ? (
+                        <Image
+                          src={cover.src}
+                          alt=""
+                          fill
+                          sizes="(max-width: 768px) 100vw, 560px"
+                          className="object-contain object-top transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                      ) : (
+                        <div className="dot-grid flex h-full w-full items-center justify-center">
+                          <span
+                            className="font-outfit px-4 text-center text-xl font-bold tracking-tight"
+                            style={{ color: "var(--fg-3)" }}
+                          >
+                            {p.title}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </CoverFrame>
 
-                <div className="relative flex flex-1 flex-col gap-4">
-                  {/* Meta */}
-                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-1 flex-col gap-3.5 p-5 sm:p-6">
+                    {/* Meta */}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span
-                        className="rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider"
+                        className="border px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider"
                         style={{
                           color: "var(--fg-4)",
                           background: "var(--surface-2)",
@@ -112,79 +207,78 @@ export default function ProjectsGrid({ projects }: { projects: readonly ProjectI
                       >
                         {p.category}
                       </span>
+                      <span
+                        className="inline-flex items-center gap-1 font-mono text-xs"
+                        style={{ color: "var(--fg-4)" }}
+                      >
+                        <Calendar className="h-3 w-3" aria-hidden="true" />
+                        {p.range.start} — {p.range.end}
+                      </span>
                     </div>
-                    <span
-                      className="flex items-center gap-1 text-xs font-medium"
-                      style={{ color: "var(--fg-4)" }}
-                    >
-                      <Calendar className="h-3 w-3" />
-                      {p.range.start} — {p.range.end}
-                    </span>
-                  </div>
 
-                  {/* Title + desc */}
-                  <div>
-                    <h3
-                      className="font-outfit text-lg font-extrabold tracking-tight transition-colors md:text-xl"
-                      style={{ color: "var(--fg)" }}
-                    >
-                      {p.title}
-                    </h3>
-                    <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--fg-3)" }}>
+                    {/* Title */}
+                    <div>
+                      <h2
+                        className="font-outfit text-lg font-bold tracking-tight md:text-xl"
+                        style={{ color: "var(--fg)" }}
+                      >
+                        <CardTitleLink slug={p.slug} live={live?.href}>
+                          {p.title}
+                        </CardTitleLink>
+                      </h2>
+                      <p className="mt-0.5 text-xs font-medium" style={{ color: "var(--fg-4)" }}>
+                        {p.tagline}
+                      </p>
+                    </div>
+
+                    {p.status && <StatusBadge status={p.status} />}
+
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--fg-3)" }}>
                       {p.description}
                     </p>
-                    {isFrontendOnly && (
-                      <p
-                        className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold"
-                        style={{ color: "#f59e0b" }}
-                      >
-                        <motion.span
-                          className="inline-block h-1.5 w-1.5 rounded-full"
-                          style={{ background: "#f59e0b" }}
-                          animate={reduceMotion ? undefined : { scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-                          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                        />
-                        Frontend live · Backend in progress
-                      </p>
-                    )}
-                  </div>
 
-                  {/* Tech */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {p.stack.slice(0, 8).map((t) => (
-                      <TechBadge key={t} name={t} />
-                    ))}
-                  </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {p.stack.slice(0, 7).map((t) => (
+                        <TechBadge key={t} name={t} />
+                      ))}
+                      {p.stack.length > 7 && (
+                        <span className="tag">+{p.stack.length - 7}</span>
+                      )}
+                    </div>
 
-                  {/* Actions */}
-                  <div className="mt-auto flex flex-wrap items-center gap-2.5 pt-2">
-                    <Link
-                      href={`/projects/${p.slug}`}
-                      className="btn btn-primary group/btn py-2 text-xs"
-                    >
-                      Case study
-                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-0.5" />
-                    </Link>
-                    {p.links.slice(0, 2).map((l) => (
-                      <a
-                        key={l.href}
-                        href={l.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={l.label === "Live" ? "btn btn-ghost py-2.5 px-4 text-sm font-semibold" : "btn btn-ghost py-2 text-xs"}
-                      >
-                        <ExternalLink className={l.label === "Live" ? "h-4 w-4" : "h-3.5 w-3.5"} />
-                        {l.label}
-                      </a>
-                    ))}
+                    {/* Actions */}
+                    <div className="relative z-10 mt-auto flex flex-wrap items-center gap-2.5 pt-1.5">
+                      {PROJECT_DETAILS_ENABLED && (
+                        <Link
+                          href={`/projects/${p.slug}`}
+                          className="btn btn-primary group/btn px-4 py-2 text-xs"
+                        >
+                          Case study
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+                        </Link>
+                      )}
+                      {live && (
+                        <a
+                          href={live.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          // With case studies off this is the card's primary action.
+                          className={`btn group/btn px-4 py-2 text-xs ${
+                            PROJECT_DETAILS_ENABLED ? "btn-ghost" : "btn-primary"
+                          }`}
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                          Live site
+                        </a>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </article>
-            </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </motion.div>
-    </section>
+                </m.article>
+              );
+            })}
+          </AnimatePresence>
+        </m.div>
+      </section>
+    </LazyMotion>
   );
 }
