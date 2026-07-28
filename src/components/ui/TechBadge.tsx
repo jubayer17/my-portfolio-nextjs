@@ -13,6 +13,7 @@ import {
 import { FaAws } from "react-icons/fa6";
 import {
   Brain, MessagesSquare, Boxes, Database, Search, Layers, Waypoints, Terminal,
+  Droplets, Palette, Store,
 } from "lucide-react";
 import type { ComponentType, CSSProperties } from "react";
 
@@ -127,6 +128,9 @@ const MAP: Record<string, BadgeMeta> = {
   "Cloudinary": { icon: SiCloudinary, color: "#3448C5", bg: "rgba(52,72,197,0.12)" },
   "Axios": { icon: SiAxios, color: "#5A29E4", bg: "rgba(90,41,228,0.12)" },
   "Shopify": { icon: SiShopify, color: "#5b8a2f", bg: "rgba(122,179,72,0.14)" },
+  "Liquid": { icon: Droplets, color: "#319795", bg: "rgba(49,151,149,0.12)" },
+  "Ella Theme": { icon: Palette, color: "#8b5cf6", bg: "rgba(139,92,246,0.12)" },
+  "Shopify Storefront API": { icon: Store, color: "#5b8a2f", bg: "rgba(122,179,72,0.14)" },
 };
 
 interface Props {

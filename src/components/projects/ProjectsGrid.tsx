@@ -4,7 +4,7 @@ import { AnimatePresence, LazyMotion, domAnimation, m, useReducedMotion } from "
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo, useState } from "react";
-import { ExternalLink, ArrowRight, Calendar } from "lucide-react";
+import { ExternalLink, ArrowRight } from "lucide-react";
 
 import { PROJECT_DETAILS_ENABLED, type ProjectItem } from "@/data/resume";
 import TechBadge from "@/components/ui/TechBadge";
@@ -210,13 +210,6 @@ export default function ProjectsGrid({ projects }: { projects: readonly ProjectI
                         }}
                       >
                         {p.category}
-                      </span>
-                      <span
-                        className="inline-flex items-center gap-1 font-mono text-xs"
-                        style={{ color: "var(--fg-4)" }}
-                      >
-                        <Calendar className="h-3 w-3" aria-hidden="true" />
-                        {p.range.start} — {p.range.end}
                       </span>
                     </div>
 

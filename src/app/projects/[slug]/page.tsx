@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, ExternalLink, Calendar, Tag, CheckCircle2, Layers } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, Tag, CheckCircle2, Layers } from "lucide-react";
 import type { Metadata } from "next";
 
 import { resume, projectBySlug, PROJECT_DETAILS_ENABLED } from "@/data/resume";
@@ -100,17 +100,6 @@ export default async function ProjectPage(
             </p>
           </div>
 
-          <span
-            className="inline-flex shrink-0 items-center gap-1.5 self-start border px-3 py-1.5 font-mono text-xs font-semibold"
-            style={{
-              color: "var(--fg-3)",
-              background: "var(--surface-2)",
-              borderColor: "var(--border)",
-            }}
-          >
-            <Calendar className="h-3 w-3" aria-hidden="true" />
-            {project.range.start} — {project.range.end}
-          </span>
         </div>
 
         {project.links.length > 0 && (

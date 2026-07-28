@@ -53,7 +53,6 @@ export type ProjectItem = {
     slug: string;
     title: string;
     tagline: string;
-    range: DateRange;
     description: string;
     bullets: string[];
     features: string[];
@@ -240,9 +239,9 @@ export const resume = {
                 "Delivered client-facing applications using Shopify, Headless Shopify, and Framer, with a focus on performance and modern UI/UX.",
             ],
             spotlight: [
-                "210+ production APIs — NestJS, Prisma, PostgreSQL.",
-                "115+ Django REST endpoints — Celery, Redis, Docker.",
-                "Multi-tenant ERP — subdomain tenancy, RBAC, POS.",
+                "Multi-tenant ERP (Sortorium) — subdomain tenancy, RBAC, HRM, Inventory, POS.",
+                "Barbershop SaaS (Glamora) — appointments, billing, ZKTeco biometrics.",
+                "Shopify e-commerce — Ella theme, Liquid, Storefront API.",
             ],
             stack: ["NestJS", "Django", "PostgreSQL", "Redis", "Prisma", "Docker", "Next.js"],
         },
@@ -286,7 +285,6 @@ export const resume = {
             slug: "glamora",
             title: "Glamora",
             tagline: "Multi-Tenant SaaS — Salon & Barbershop Management",
-            range: { start: "2026", end: "Present" },
             category: "Enterprise",
             featured: true,
             status: {
@@ -329,7 +327,6 @@ export const resume = {
             slug: "sortorium",
             title: "Sortorium",
             tagline: "ERP Platform — HR, Inventory & Operations",
-            range: { start: "2026", end: "Present" },
             category: "Enterprise",
             featured: true,
             description:
@@ -363,12 +360,19 @@ export const resume = {
                 "CI/CD (GitHub Actions)",
             ],
             links: [{ label: "Live", href: "https://sortorium.com/" }],
+            images: [
+                {
+                    src: "/assets/sortorium.png",
+                    alt: "Sortorium ERP platform screenshot",
+                    width: 1920,
+                    height: 2910,
+                },
+            ],
         },
         {
             slug: "hirebd",
             title: "HireBD",
             tagline: "Job Marketplace — Candidates & Employers",
-            range: { start: "2025", end: "2025" },
             category: "Platform",
             featured: true,
             description:
@@ -412,10 +416,49 @@ export const resume = {
             ],
         },
         {
+            slug: "tapered",
+            title: "Tapered",
+            tagline: "E-Commerce — Modern Luxury Fashion Brand",
+            category: "Product",
+            featured: true,
+            description:
+                "A premium Shopify e-commerce store for a modern luxury clothing brand, built on the Ella theme with custom Liquid customisations, featuring curated collections and a seamless checkout experience tailored for the Bangladeshi fashion market.",
+            bullets: [
+                "Customised the Ella Shopify theme with Liquid templating to deliver a brand-aligned shopping experience from product discovery to checkout.",
+                "Extended Shopify's native functionality with Storefront API integrations for performant product browsing, cart management, and customer account flows.",
+                "Implemented responsive collection pages, product detail views with image galleries, and a streamlined cart-to-checkout pipeline optimised for conversion.",
+                "Configured Shopify's admin backend for inventory, order management, and customer analytics, handing off a complete end-to-end e-commerce solution.",
+            ],
+            features: [
+                "Ella theme customisation",
+                "Custom Liquid storefront",
+                "Collection browsing & filtering",
+                "Product detail with image gallery",
+                "Cart & checkout pipeline",
+                "Customer account portal",
+                "Mobile-first responsive design",
+                "Shopify admin configuration",
+            ],
+            stack: [
+                "Shopify",
+                "Liquid",
+                "Ella Theme",
+                "Shopify Storefront API",
+            ],
+            links: [{ label: "Live", href: "https://taperedbd.com/" }],
+            images: [
+                {
+                    src: "/assets/tapered.png",
+                    alt: "Tapered e-commerce clothing store screenshot",
+                    width: 1920,
+                    height: 5192,
+                },
+            ],
+        },
+        {
             slug: "restrocore",
             title: "RestroCore",
             tagline: "Restaurant Management — POS, KDS & Analytics",
-            range: { start: "2025", end: "Present" },
             category: "Product",
             featured: true,
             status: {
@@ -459,7 +502,6 @@ export const resume = {
             slug: "geek-estates",
             title: "Geek Estates",
             tagline: "Real Estate Platform — Listings & Search",
-            range: { start: "2026", end: "Present" },
             category: "Platform",
             featured: true,
             description:
@@ -499,7 +541,6 @@ export const resume = {
             slug: "cf-ladder",
             title: "CF Ladder",
             tagline: "Codeforces Tracker — Filtering & Performance Dashboard",
-            range: { start: "Aug 2025", end: "Present" },
             category: "Competitive Programming",
             featured: true,
             description:
@@ -544,7 +585,6 @@ export const resume = {
             slug: "edulecta",
             title: "Edulecta",
             tagline: "MERN eLearning Platform — Auth & Progress Tracking",
-            range: { start: "Feb 2025", end: "Jun 2025" },
             category: "Education",
             featured: true,
             description:

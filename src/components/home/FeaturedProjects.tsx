@@ -214,9 +214,6 @@ export default function FeaturedProjects() {
                         >
                           {p.category}
                         </span>
-                        <span className="text-[11px]" style={{ color: "var(--fg-4)" }}>
-                          {p.range.start} – {p.range.end}
-                        </span>
                       </div>
 
                       {p.status && (
@@ -399,7 +396,7 @@ export default function FeaturedProjects() {
                     className="shrink-0 border px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest"
                     style={{ borderColor: "var(--border)", color: "var(--fg-4)" }}
                   >
-                    {hovered.range.end}
+                    {hovered.category}
                   </span>
                 </div>
               </div>
