@@ -22,12 +22,7 @@ const nextConfig: NextConfig = {
   // Tree-shake large packages so only used exports are bundled.
   // Without this, lucide-react ships every icon (~1 000 SVGs).
   experimental: {
-    optimizePackageImports: [
-      "lucide-react",
-      "framer-motion",
-      "react-icons",
-      "@headlessui/react",
-    ],
+    optimizePackageImports: ["lucide-react", "framer-motion", "react-icons"],
   },
 
   // Serve modern image formats; long-lived cache for static assets

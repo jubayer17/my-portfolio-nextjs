@@ -195,8 +195,12 @@ html.dark {
   --border: rgba(255, 255, 255, 0.12);
   --border-2: rgba(255, 255, 255, 0.2);
 
-  --accent: #8b5cf6;
-  --accent-2: #7c3aed;
+  /* Was #8b5cf6, which is only 4.23:1 against the white text sitting on it in
+     .btn-primary and the accent-filled badges — under WCAG AA's 4.5:1. This is
+     the light theme's accent, which clears it at 5.7:1. The softer violets used
+     for glows and hairlines are separate tokens and keep their brightness. */
+  --accent: #7c3aed;
+  --accent-2: #6d28d9;
   --accent-soft: rgba(139, 92, 246, 0.12);
   --accent-line: rgba(139, 92, 246, 0.32);
   --accent-glow: rgba(139, 92, 246, 0.22);
@@ -727,4 +731,24 @@ body:has(#intro-overlay) #page-content {
   .btn:hover {
     transform: none;
   }
+}
+
+/* ── Tech badge text colour ──
+   The brand colour arrives as --badge from TechBadge. On light surfaces it's
+   used as-is; on dark ones it's blended toward white, because brand palettes
+   are picked against white pages and several (TypeScript blue, NestJS red,
+   Kubernetes blue, Redis red) sit at 3.2–3.6:1 against their own 12% tint
+   here — under the 4.5:1 WCAG AA needs for text this size.
+   65% keeps the colour recognisable and clears AA with margin. */
+.tech-badge {
+  color: var(--badge, var(--fg-2));
+}
+.dark .tech-badge {
+  color: color-mix(in srgb, var(--badge, var(--fg-2)) 65%, #ffffff);
+}
+/* Brand colours that fail in one theme regardless — near-white, near-black,
+   pale yellow — keep the plain foreground and show brand only in the glyph. */
+.tech-badge-neutral,
+.dark .tech-badge-neutral {
+  color: var(--fg-2);
 }

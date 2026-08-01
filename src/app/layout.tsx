@@ -48,18 +48,21 @@ export const metadata: Metadata = {
     "Software Engineer", "Full-Stack", "Next.js", "React",
     "Node.js", "NestJS", "PostgreSQL", "TypeScript",
   ],
+  alternates: { canonical: "/" },
   openGraph: {
     title: `${resume.person.name} — ${resume.person.role}`,
     description: resume.summary.join(" "),
     type: "website",
     url: "https://jubayer-ahmed.vercel.app",
-    images: [{ url: "/assets/me.jpg", width: 1200, height: 630, alt: resume.person.name }],
+    siteName: resume.person.name,
+    // No `images` here on purpose: opengraph-image.tsx / twitter-image.tsx
+    // generate the card and wire themselves in. Listing one here as well would
+    // emit a second og:image tag and let the wrong one win.
   },
   twitter: {
     card: "summary_large_image",
     title: `${resume.person.name} — ${resume.person.role}`,
     description: resume.summary.join(" "),
-    images: ["/assets/me.jpg"],
   },
 };
 

@@ -156,13 +156,15 @@ export default function TechBadge({ name, size = "sm" }: Props) {
 
   return (
     <span
-      className="inline-flex max-w-full items-center gap-1.5 border px-2 py-1 font-medium transition-transform duration-150 hover:-translate-y-px"
-      style={{
-        color: neutralText ? "var(--fg-2)" : color,
-        background: bg,
-        borderColor: "var(--border)",
-        fontSize,
-      }}
+      className={`tech-badge inline-flex max-w-full items-center gap-1.5 border px-2 py-1 font-medium transition-transform duration-150 hover:-translate-y-px${
+        neutralText ? " tech-badge-neutral" : ""
+      }`}
+      // The brand colour goes in as a custom property rather than a literal
+      // `color`, so the dark theme can lighten it (see .tech-badge in
+      // globals.css). Brand palettes are chosen against white pages: on this
+      // one's dark surfaces, half of them landed at 3.2–3.6:1 against their own
+      // tint and failed WCAG AA for text.
+      style={{ "--badge": color, background: bg, borderColor: "var(--border)", fontSize } as CSSProperties}
     >
       <Icon
         aria-hidden="true"

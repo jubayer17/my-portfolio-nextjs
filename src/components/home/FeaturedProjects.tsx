@@ -644,16 +644,20 @@ export default function FeaturedProjects() {
                   className="flex items-center justify-between gap-3 border-t px-4 py-3"
                   style={{ borderColor: "var(--border)", background: "var(--surface)" }}
                 >
+                  {/* The title, then the tagline. This strip used to print the
+                      category twice — once as the eyebrow and again in the
+                      badge, 200px apart — while the project's own name never
+                      appeared in the panel at all. */}
                   <div className="min-w-0">
-                    <p
-                      className="font-mono text-[9px] font-bold uppercase tracking-[0.2em]"
-                      style={{ color: "var(--fg-4)" }}
-                    >
-                      {hovered.category}
-                    </p>
                     <p
                       className="font-outfit truncate text-sm font-bold"
                       style={{ color: "var(--fg)" }}
+                    >
+                      {hovered.title}
+                    </p>
+                    <p
+                      className="truncate text-[11px] font-medium"
+                      style={{ color: "var(--fg-4)" }}
                     >
                       {hovered.tagline}
                     </p>
