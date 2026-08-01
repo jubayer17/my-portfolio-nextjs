@@ -6,13 +6,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import {
   LazyMotion, domAnimation, m, AnimatePresence,
-  useMotionValue, useSpring, useReducedMotion, type Variants,
+  useMotionValue, useSpring, useTransform, useVelocity,
+  useReducedMotion, type Variants,
 } from "framer-motion";
 
 import SectionHeader from "@/components/ui/SectionHeader";
 import TechBadge from "@/components/ui/TechBadge";
 import StatusBadge from "@/components/ui/StatusBadge";
-import { resume, PROJECT_DETAILS_ENABLED } from "@/data/resume";
+import { useScramble } from "@/components/ui/useScramble";
+import { visibleProjects, PROJECT_DETAILS_ENABLED } from "@/data/resume";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -67,6 +69,38 @@ const row: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: EASE } },
 };
 
+/**
+ * A project title that decodes itself whenever its row is picked up, and snaps
+ * back to plain text the moment the pointer leaves.
+ *
+ * Lives in its own component because the decode needs a hook, and the rows are
+ * produced by a map.
+ */
+function ScrambleTitle({
+  title,
+  active,
+  className,
+  style,
+}: Readonly<{
+  title: string;
+  active: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+}>) {
+  const { ref, play, reset } = useScramble<HTMLSpanElement>(title);
+
+  useEffect(() => {
+    if (active) play();
+    else reset();
+  }, [active, play, reset]);
+
+  return (
+    <span ref={ref} className={className} style={style}>
+      {title}
+    </span>
+  );
+}
+
 // Upper bounds only — the panel sizes itself to the capture's aspect ratio, so
 // a full-page shot is height-limited and a viewport shot is width-limited.
 // Either way the whole screenshot stays visible.
@@ -77,9 +111,100 @@ const PREVIEW_MAX_VH = 72;
 const CAPTION_H = 62;
 const PAD = 20;
 
+// A project with several captures can't size the panel to any one of them —
+// a full-page site shot and a wide dashboard shot would resize the panel on
+// every slide, under a cursor that's already moving. Multi-shot projects get a
+// fixed frame instead and crop to the top, the way the grid covers do.
+const GALLERY_ASPECT = "16 / 10";
+/** How long each slide holds before advancing. Also drives the progress bar. */
+const SLIDE_MS = 2400;
+
+/** Louvres the incoming capture is dealt through. */
+const SHUTTER = 7;
+
+// Loose and slightly heavy: the panel should lag the cursor, overshoot, and
+// settle rather than track it rigidly.
+const TILT_SPRING = { stiffness: 190, damping: 22, mass: 0.7 } as const;
+/** Pointer speed, in px/s, that corresponds to a full-deflection lean. */
+const TILT_AT = 2600;
+
+/**
+ * A venetian-blind wipe. Each louvre clips open from an alternating edge, so
+ * the new capture is dealt in rather than slid in — and because clip-path
+ * crops instead of scaling, the image never squashes on the way.
+ */
+const louvre: Variants = {
+  hidden: (i: number) => ({
+    clipPath: i % 2 ? "inset(0% 0% 100% 0%)" : "inset(100% 0% 0% 0%)",
+  }),
+  show: {
+    clipPath: "inset(0% 0% 0% 0%)",
+    transition: { duration: 0.52, ease: EASE },
+  },
+};
+
+const shutter: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.045 } },
+};
+
+/**
+ * One capture, cut into vertical louvres that wipe open in sequence.
+ *
+ * Each louvre is a fixed slice of the frame holding a full-width copy of the
+ * image, offset left so the slices reassemble into one continuous picture —
+ * the seams only exist while the wipe is running.
+ */
+function Shutter({ src, alt }: Readonly<{ src: string; alt: string }>) {
+  return (
+    <m.div
+      className="absolute inset-0"
+      variants={shutter}
+      initial="hidden"
+      animate="show"
+      aria-label={alt}
+    >
+      {Array.from({ length: SHUTTER }, (_, i) => (
+        <m.div
+          key={i}
+          custom={i}
+          variants={louvre}
+          className="absolute bottom-0 top-0 overflow-hidden"
+          style={{
+            left: `${(i * 100) / SHUTTER}%`,
+            width: `calc(${100 / SHUTTER}% + 1px)`,
+          }}
+        >
+          <div
+            className="absolute bottom-0 top-0"
+            style={{ left: `${-i * 100}%`, width: `${SHUTTER * 100}%` }}
+          >
+            <Image
+              src={src}
+              alt=""
+              fill
+              sizes={`${PREVIEW_MAX_W}px`}
+              className="object-cover object-top"
+            />
+          </div>
+          {/* Louvre edge — bright while the blind is opening, gone once the
+              picture is whole. */}
+          <m.span
+            className="absolute inset-y-0 right-0 w-px"
+            style={{ background: "var(--accent-line)" }}
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.5, delay: 0.36, ease: "linear" }}
+          />
+        </m.div>
+      ))}
+    </m.div>
+  );
+}
+
 export default function FeaturedProjects() {
   const reduceMotion = useReducedMotion();
-  const projects = resume.projects;
+  const projects = visibleProjects;
 
   // The floating preview is a pointer affordance — it has no place on touch,
   // where `pointerenter` fires on tap and leaves the card stuck on screen.
@@ -100,6 +225,15 @@ export default function FeaturedProjects() {
   const y = useMotionValue(0);
   const sx = useSpring(x, { stiffness: 420, damping: 40, mass: 0.5 });
   const sy = useSpring(y, { stiffness: 420, damping: 40, mass: 0.5 });
+
+  // Pointer speed turned into lean. Flick down the list and the panel banks
+  // into the movement, overshoots, then levels off — the inertia is what sells
+  // it as an object being carried rather than a tooltip being positioned.
+  const vx = useVelocity(sx);
+  const vy = useVelocity(sy);
+  const rotateY = useSpring(useTransform(vx, [-TILT_AT, TILT_AT], [17, -17]), TILT_SPRING);
+  const rotateX = useSpring(useTransform(vy, [-TILT_AT, TILT_AT], [-13, 13]), TILT_SPRING);
+  const skewY = useSpring(useTransform(vx, [-TILT_AT, TILT_AT], [-2.4, 2.4]), TILT_SPRING);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const lastPointer = useRef({ x: 0, y: 0 });
@@ -123,7 +257,27 @@ export default function FeaturedProjects() {
   );
 
   const hovered = projects.find((p) => p.slug === hoveredSlug);
-  const preview = hovered?.images?.[0];
+  const shots = hovered?.images ?? [];
+  const shotCount = shots.length;
+  // Two or more captures turn the panel into a slideshow; one keeps the
+  // aspect-fitted single-shot layout.
+  const gallery = shotCount > 1;
+  const preview = shots[0];
+
+  const [slide, setSlide] = useState(0);
+  // `slide` trails a project change by a render, so never index past the set.
+  const activeIndex = shotCount ? slide % shotCount : 0;
+  const prevIndex = shotCount ? (slide + shotCount - 1) % shotCount : 0;
+
+  // Only tick when there's something to advance to. The panel is
+  // pointer-events-none, so autoplay is the only way a visitor ever sees the
+  // second shot. The counter is reset by the pointerenter handler rather than
+  // here, so entering a row doesn't cost a second render.
+  useEffect(() => {
+    if (shotCount < 2) return;
+    const id = setInterval(() => setSlide((i) => i + 1), SLIDE_MS);
+    return () => clearInterval(id);
+  }, [hoveredSlug, shotCount]);
 
   // The panel doesn't exist yet on the pointerenter that reveals it, so the
   // first track() runs against fallback numbers. Re-clamp once it's measurable,
@@ -172,6 +326,8 @@ export default function FeaturedProjects() {
                 onPointerEnter={(e) => {
                   if (!canHover || e.pointerType !== "mouse") return;
                   setHoveredSlug(p.slug);
+                  // Every hover starts the slideshow from the first shot.
+                  setSlide(0);
                   track(e.clientX, e.clientY);
                 }}
                 onPointerMove={(e) => {
@@ -180,6 +336,22 @@ export default function FeaturedProjects() {
                 }}
                 onPointerLeave={() => setHoveredSlug(null)}
               >
+                {/* A light runs the length of the row's top edge as it's
+                    picked up — the read head passing over the record. */}
+                {isHovered && !reduceMotion && (
+                  <m.span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-0 top-0 z-10 h-px w-1/3"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, transparent, var(--accent), var(--cyan), transparent)",
+                    }}
+                    initial={{ x: "-110%", opacity: 0 }}
+                    animate={{ x: "410%", opacity: 1 }}
+                    transition={{ duration: 0.9, ease: EASE }}
+                  />
+                )}
+
                 {/* One primary target for the whole row — the case study while
                     those pages exist, the live site otherwise. The separate
                     Live button sits outside it so both stay reachable. */}
@@ -206,7 +378,10 @@ export default function FeaturedProjects() {
                           className="font-outfit text-base font-bold tracking-tight transition-colors duration-200 sm:text-lg"
                           style={{ color: isHovered ? "var(--accent-text)" : "var(--fg)" }}
                         >
-                          {p.title}
+                          <ScrambleTitle
+                            title={p.title}
+                            active={isHovered && !reduceMotion}
+                          />
                         </h3>
                         <span
                           className="font-mono text-[10px] font-bold uppercase tracking-[0.12em]"
@@ -318,14 +493,20 @@ export default function FeaturedProjects() {
               style={{
                 x: sx,
                 y: sy,
-                // Panel width follows the capture's aspect ratio: wide shots hit
-                // the 460px cap, tall full-page shots are limited by the height
-                // left over once the caption strip is subtracted.
-                width: preview
-                  ? `min(${PREVIEW_MAX_W}px, calc((${PREVIEW_MAX_VH}vh - ${CAPTION_H}px) * ${(
-                      preview.width / preview.height
-                    ).toFixed(4)}))`
-                  : `${PREVIEW_MAX_W}px`,
+                rotateX,
+                rotateY,
+                skewY,
+                transformPerspective: 1200,
+                // Single-shot panels follow the capture's aspect ratio: wide
+                // shots hit the 460px cap, tall full-page shots are limited by
+                // the height left over once the caption strip is subtracted.
+                // Galleries use the fixed frame and always take the full width.
+                width:
+                  preview && !gallery
+                    ? `min(${PREVIEW_MAX_W}px, calc((${PREVIEW_MAX_VH}vh - ${CAPTION_H}px) * ${(
+                        preview.width / preview.height
+                      ).toFixed(4)}))`
+                    : `${PREVIEW_MAX_W}px`,
               }}
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -349,7 +530,92 @@ export default function FeaturedProjects() {
                   }}
                 />
 
-                {preview ? (
+                {gallery ? (
+                  <div
+                    className="relative overflow-hidden"
+                    style={{ aspectRatio: GALLERY_ASPECT, background: "var(--surface-2)" }}
+                  >
+                    {/* The capture being replaced sits underneath as a plain
+                        still. No AnimatePresence: once the louvres finish, the
+                        new capture covers it completely, so there's nothing to
+                        animate out and the stacking order can't go wrong. On
+                        the first slide there's nothing behind yet and the
+                        blind simply opens onto the panel. */}
+                    {slide > 0 && (
+                      <Image
+                        src={shots[prevIndex].src}
+                        alt=""
+                        fill
+                        sizes={`${PREVIEW_MAX_W}px`}
+                        className="object-cover object-top"
+                      />
+                    )}
+
+                    <Shutter
+                      key={`${hovered.slug}-${activeIndex}`}
+                      src={shots[activeIndex].src}
+                      alt={shots[activeIndex].alt}
+                    />
+
+                    {/* Keeps the indicators legible over whatever the capture
+                        happens to put along its bottom edge. */}
+                    <span
+                      className="absolute inset-x-0 bottom-0 h-16"
+                      style={{
+                        background:
+                          "linear-gradient(to top, rgba(6,7,18,0.8), rgba(6,7,18,0.28) 45%, transparent)",
+                      }}
+                    />
+
+                    <span
+                      className="absolute right-2.5 top-2.5 border px-1.5 py-[3px] font-mono text-[9px] font-bold tracking-[0.16em] backdrop-blur-sm"
+                      style={{
+                        borderColor: "rgba(255,255,255,0.24)",
+                        background: "rgba(6,7,18,0.55)",
+                        color: "rgba(255,255,255,0.92)",
+                      }}
+                    >
+                      {String(activeIndex + 1).padStart(2, "0")}
+                      <span style={{ color: "rgba(255,255,255,0.45)" }}>
+                        {" / "}
+                        {String(shotCount).padStart(2, "0")}
+                      </span>
+                    </span>
+
+                    {/* Segmented bars, one per shot — the active one fills over
+                        exactly the dwell time, so the next slide never
+                        surprises you. */}
+                    <div className="absolute inset-x-0 bottom-0 flex gap-1.5 px-2.5 pb-2.5">
+                      {shots.map((s, i) => (
+                        <span
+                          key={s.src}
+                          className="relative h-[3px] flex-1 overflow-hidden"
+                          style={{ background: "rgba(255,255,255,0.26)" }}
+                        >
+                          {i < activeIndex && (
+                            <span
+                              className="absolute inset-0 block"
+                              style={{ background: "var(--accent)" }}
+                            />
+                          )}
+                          {i === activeIndex && (
+                            <m.span
+                              key={`${hovered.slug}-${slide}`}
+                              className="absolute inset-y-0 left-0 block"
+                              style={{
+                                background:
+                                  "linear-gradient(90deg, var(--accent), var(--cyan))",
+                              }}
+                              initial={{ width: "0%" }}
+                              animate={{ width: "100%" }}
+                              transition={{ duration: SLIDE_MS / 1000, ease: "linear" }}
+                            />
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : preview ? (
                   // The panel is already sized to the aspect ratio, so the
                   // image just fills it — the whole capture, uncropped.
                   <Image

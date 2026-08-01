@@ -58,13 +58,23 @@ export type ProjectItem = {
     features: string[];
     stack: string[];
     links: LinkItem[];
-    /** Intrinsic pixel size — the hover preview sizes itself from the aspect
-     *  ratio, since captures range from wide viewport shots to tall full-page ones. */
+    /** First entry is the card cover. Intrinsic pixel size matters: with a
+     *  single capture the hover preview sizes itself from the aspect ratio,
+     *  since shots range from wide viewport ones to tall full-page ones. Give a
+     *  project two or more and the preview switches to a fixed frame and
+     *  auto-plays them as a slideshow instead. */
     images?: { src: string; alt: string; width: number; height: number }[];
     category: ProjectCategory;
     status?: ProjectStatus;
     featured?: boolean;
 };
+
+/**
+ * Kept in `projects` but pulled from every listing, count, and route.
+ * Cheaper than deleting the entry — shelved work comes back by
+ * removing its slug from here.
+ */
+const HIDDEN_PROJECT_SLUGS = new Set<string>(["glamora"]);
 
 export type SkillGroup = {
     key: string;
@@ -281,6 +291,68 @@ export const resume = {
     ] satisfies ExperienceItem[],
 
     projects: [
+        {
+            slug: "german-compass",
+            title: "German Compass",
+            tagline: "Language Learning Platform — Public Site & LMS Admin",
+            category: "Education",
+            featured: true,
+            status: {
+                label: "In active development",
+                note: "Currently building",
+                tone: "accent",
+            },
+            description:
+                "German language learning platform for a Cumilla-based institute — a trilingual public site for course discovery and enrolment, backed by an LMS admin panel that runs batches, attendance, mock tests, certificates, and billing under role-based access.",
+            bullets: [
+                "Building a two-surface platform: a public site in Bangla, English, and German for course discovery, and an LMS admin panel that runs the institute's day-to-day operations.",
+                "Modelled the CEFR ladder (A1 → B2) alongside Goethe/telc exam prep and Ausbildung guidance as first-class course tracks, with a free placement test routing each enquiry to the right level.",
+                "Built batch management around real seat counts, so running and upcoming batches expose live completion, remaining seats, and schedule — the public site and the admin panel read the same source.",
+                "Implemented role-based access control so admin, operations, teacher, and student roles each reach only the modules and records their role owns.",
+                "Shipped the learning side end to end — attendance, assignments, mock tests, recorded classes, and study resources — with certificate approval and issuance as a tracked, auditable workflow.",
+                "Wired finance and operations into the same system (invoices, overdue tracking, accounts, inventory, office stock) so revenue reporting comes off live data instead of spreadsheets.",
+            ],
+            features: [
+                "Trilingual public site (BN / EN / DE)",
+                "CEFR course ladder — A1 to B2",
+                "Goethe & telc exam preparation",
+                "Ausbildung pathway support",
+                "Live batch & seat tracking",
+                "Free placement-test funnel",
+                "Role-based access control",
+                "Student & teacher records",
+                "Attendance and assignments",
+                "Mock tests & recorded classes",
+                "Certificate approval workflow",
+                "Invoicing, accounts & inventory",
+            ],
+            stack: [
+                "Next.js",
+                "TypeScript",
+                "Tailwind CSS",
+                "NestJS",
+                "PostgreSQL",
+                "Prisma",
+                "Redis",
+                "RBAC",
+                "Docker",
+            ],
+            links: [],
+            images: [
+                {
+                    src: "/assets/german-compass-web.png",
+                    alt: "German Compass public site — Bangla hero, CEFR course levels, and a live batch tracker",
+                    width: 1920,
+                    height: 3413,
+                },
+                {
+                    src: "/assets/german-compass-lms.png",
+                    alt: "German Compass LMS admin dashboard — learner stats, attention queue, upcoming classes, and batch table",
+                    width: 1920,
+                    height: 1466,
+                },
+            ],
+        },
         {
             slug: "glamora",
             title: "Glamora",
@@ -693,9 +765,17 @@ export const resume = {
     ],
 } as const;
 
+/**
+ * Every listing, count, and route reads this rather than `resume.projects`,
+ * so shelving a project is a one-line change in HIDDEN_PROJECT_SLUGS.
+ */
+export const visibleProjects = resume.projects.filter(
+    (p) => !HIDDEN_PROJECT_SLUGS.has(p.slug)
+);
+
 /** Convenience lookups used across pages. */
 export const projectBySlug = (slug: string) =>
-    resume.projects.find((p) => p.slug === slug);
+    visibleProjects.find((p) => p.slug === slug);
 
 export const skillGroup = (key: string) =>
     resume.skills.find((g) => g.key === key)?.items ?? [];

@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
+
+gsap.registerPlugin(ScrambleTextPlugin);
 
 const WORDS = [
   { text: "\u09b8\u09cd\u09ac\u09be\u0997\u09a4\u09ae", dir: "ltr" },
@@ -22,7 +25,16 @@ const TOTAL   = WORDS.length;
 const HOLD_MS = 44;
 const IN_DUR  = 0.036;
 const OUT_DUR = 0.028;
-const LAST_HOLD_MS = 300;
+
+// The cycle resolves into a signature rather than just stopping on "Welcome" —
+// the greeting clips away and the name decodes into the space it left.
+const NAME = "JUBAYER AHMED";
+const ROLE = "SOFTWARE ENGINEER";
+const SIGNATURE_HOLD_MS = 340;
+
+// The curtain is nine vertical slats, not one panel. On exit they lift in a
+// left-to-right wave, so the page underneath is uncovered in strips.
+const SLATS = 9;
 
 export default function IntroScreen({ onComplete }: { onComplete: () => void }) {
   const overlayRef  = useRef<HTMLDivElement>(null);
@@ -36,9 +48,13 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
   const skipRef     = useRef<HTMLButtonElement>(null);
   const barRef      = useRef<HTMLDivElement>(null);
   const counterRef  = useRef<HTMLSpanElement>(null);
-  const seamRef     = useRef<HTMLDivElement>(null);
+  const nameRef     = useRef<HTMLSpanElement>(null);
+  const roleRef     = useRef<HTMLSpanElement>(null);
+  const decorRef    = useRef<HTMLDivElement>(null);
+  const slatRefs    = useRef<(HTMLDivElement | null)[]>([]);
   const timersRef   = useRef<number[]>([]);
   const exitCalled  = useRef(false);
+  const completed   = useRef(false);
 
   // The skip button needs to reach the exit routine, which now lives inside
   // the effect (as a plain recursive function) rather than a useCallback that
@@ -60,12 +76,32 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
       timersRef.current = [];
     };
 
+    // Handing the page back is the one thing that must happen. Everything
+    // below is decoration; this is the contract with IntroManager, and calling
+    // it twice (exit tween plus failsafe) has to be harmless.
+    const finish = () => {
+      if (completed.current) return;
+      completed.current = true;
+      onComplete();
+    };
+
     const runExit = () => {
       if (exitCalled.current) return;
       exitCalled.current = true;
       clearTimers();
 
-    gsap.killTweensOf([orb1Ref.current, orb2Ref.current, orb3Ref.current, ringRef.current]);
+    // Only the slats travel now, so the overlay itself stays parked over the
+    // viewport until IntroManager unmounts it — it must stop taking clicks the
+    // moment the page starts showing through.
+    gsap.set(overlayRef.current, { pointerEvents: "none" });
+
+    // The signature timeline is still tweening the name's opacity when skip is
+    // pressed mid-decode; left alive it would fight the fade-out below.
+    gsap.killTweensOf([
+      orb1Ref.current, orb2Ref.current, orb3Ref.current, ringRef.current,
+      wordRef.current, nameRef.current, roleRef.current,
+      topLineRef.current, botLineRef.current,
+    ]);
 
     const header      = document.querySelector("header") as HTMLElement | null;
     const pageContent = document.getElementById("page-content");
@@ -77,51 +113,115 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
       gsap.set(header, { visibility: "visible", autoAlpha: 0, y: -28 });
     }
     if (pageContent) {
-      gsap.set(pageContent, { visibility: "visible", autoAlpha: 0, scale: 1.03 });
+      gsap.set(pageContent, { visibility: "visible", autoAlpha: 0, scale: 1.03, y: 22 });
     }
 
-    const tl = gsap.timeline();
+    const slats = slatRefs.current.filter(Boolean) as HTMLDivElement[];
+    // Each slat carries its own seam light on its bottom edge.
+    const seams = slats
+      .map((s) => s.firstElementChild)
+      .filter(Boolean) as HTMLElement[];
+
+    // Belt and braces: whatever happens to the page-content tween below, the
+    // overlay comes down when the curtain has finished moving.
+    const tl = gsap.timeline({ onComplete: finish });
 
     // 1. Snap intro elements out fast
     tl.to(
-      [wordRef.current, topLineRef.current, botLineRef.current,
+      [wordRef.current, nameRef.current, roleRef.current,
+       topLineRef.current, botLineRef.current,
        counterRef.current, skipRef.current, ringRef.current,
-       orb1Ref.current, orb2Ref.current, orb3Ref.current],
-      { autoAlpha: 0, duration: 0.13, ease: "power3.in", stagger: 0.004 }
+       orb1Ref.current, orb2Ref.current, orb3Ref.current, decorRef.current],
+      { autoAlpha: 0, duration: 0.15, ease: "power3.in", stagger: 0.004 }
     );
 
-    // 2. Seam glow appears at bottom edge of overlay — signals the curtain is about to lift
-    tl.to(seamRef.current, { autoAlpha: 1, duration: 0.14, ease: "power2.out" }, "-=0.04");
+    // 2. The overlay stops painting its own backdrop: from here the slats are
+    //    the only thing standing between the visitor and the page.
+    tl.set(overlayRef.current, { background: "transparent" });
 
-    // 3. Curtain slides UP off screen
-    tl.to(
-      overlayRef.current,
-      {
-        yPercent: -100,
-        duration: 0.62,
-        ease: "expo.inOut",
-        onStart() {
-          if (header) {
-            gsap.to(header, {
-              autoAlpha: 1, y: 0,
-              duration: 0.42, delay: 0.1, ease: "expo.out",
-            });
-          }
-          if (pageContent) {
-            gsap.to(pageContent, {
-              autoAlpha: 1, scale: 1,
-              duration: 0.5, delay: 0.12, ease: "expo.out",
-              clearProps: "transform",
-              onComplete,
-            });
-          }
-        },
+    // 3. Seams light up along the wave's path, a beat ahead of the lift
+    tl.to(seams, {
+      autoAlpha: 1,
+      duration: 0.16,
+      ease: "power2.out",
+      stagger: 0.026,
+    }, "-=0.05");
+
+    // 4. Slats lift in sequence, uncovering the page in strips
+    tl.to(slats, {
+      yPercent: -100,
+      duration: 0.66,
+      ease: "expo.inOut",
+      stagger: 0.034,
+      onStart() {
+        if (header) {
+          gsap.to(header, {
+            autoAlpha: 1, y: 0,
+            duration: 0.44, delay: 0.14, ease: "expo.out",
+          });
+        }
+        if (pageContent) {
+          gsap.to(pageContent, {
+            autoAlpha: 1, scale: 1, y: 0,
+            duration: 0.56, delay: 0.16, ease: "expo.out",
+            clearProps: "transform",
+            onComplete: finish,
+          });
+        }
       },
-        "-=0.03"
-      );
+    }, "-=0.06");
     };
 
     exitRef.current = runExit;
+
+    /**
+     * The finale. "Welcome" clips away, the accent rules stretch out to frame
+     * the gap, and the name decodes into it out of a churn of glyphs while its
+     * letter-spacing collapses from wide to tight. The role follows a beat
+     * later, then the curtain goes.
+     */
+    const runSignature = () => {
+      if (exitCalled.current) return;
+
+      const tl = gsap.timeline();
+
+      tl.to(wordRef.current, {
+        clipPath: "inset(0% 0% 110% 0%)",
+        duration: 0.2,
+        ease: "power3.in",
+        delay: 0.14,
+      });
+
+      // The rules widen to bracket a 13-character name rather than one word.
+      tl.to([topLineRef.current, botLineRef.current], {
+        scaleX: 2.1,
+        duration: 0.75,
+        ease: "expo.out",
+      }, "<");
+
+      tl.set(nameRef.current, { autoAlpha: 1 });
+      tl.fromTo(
+        nameRef.current,
+        { letterSpacing: "0.4em", opacity: 0.2 },
+        { letterSpacing: "-0.02em", opacity: 1, duration: 0.62, ease: "expo.out" }
+      );
+      tl.to(nameRef.current, {
+        duration: 0.6,
+        ease: "none",
+        scrambleText: { text: NAME, chars: "upperCase", speed: 0.9, revealDelay: 0.12 },
+      }, "<");
+
+      tl.to(roleRef.current, { autoAlpha: 1, duration: 0.26 }, "-=0.3");
+      tl.to(roleRef.current, {
+        duration: 0.42,
+        ease: "none",
+        scrambleText: { text: ROLE, chars: "upperCase", speed: 0.85 },
+      }, "<");
+
+      tl.call(() => {
+        addTimer(window.setTimeout(runExit, SIGNATURE_HOLD_MS));
+      });
+    };
 
     const showWord = (idx: number) => {
       if (exitCalled.current) return;
@@ -164,7 +264,7 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
     );
 
     if (isLast) {
-      tl.call(() => { addTimer(window.setTimeout(runExit, LAST_HOLD_MS)); });
+      tl.call(runSignature);
     } else {
       tl.to(wordRef.current, {
         clipPath: "inset(0% 0% 110% 0%)",
@@ -194,6 +294,12 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
     gsap.set(botLineRef.current,  { scaleX: 0, transformOrigin: "right center", autoAlpha: 1 });
     gsap.set(counterRef.current,  { autoAlpha: 0 });
     gsap.set(ringRef.current,     { autoAlpha: 0, scale: 0.88 });
+    // Seeded with the final strings so the decode churns text that's already
+    // the right width — nothing reflows as the glyphs settle.
+    if (nameRef.current) nameRef.current.textContent = NAME;
+    if (roleRef.current) roleRef.current.textContent = ROLE;
+    gsap.set([nameRef.current, roleRef.current], { autoAlpha: 0 });
+    gsap.set(slatRefs.current.filter(Boolean), { yPercent: 0 });
 
     // ── Orb ambient animations (repeat forever) ──
     gsap.to(orb1Ref.current, {
@@ -228,12 +334,26 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
       // Start word cycling
       showWord(0);
 
-      // Skip button fades in after a beat
-      gsap.to(skipRef.current, { autoAlpha: 1, duration: 0.4, delay: 0.9 });
+      // Skip button fades in after a beat. Earlier than it used to, since the
+      // signature finale made the whole intro longer.
+      gsap.to(skipRef.current, { autoAlpha: 1, duration: 0.4, delay: 0.45 });
     }, 100);
 
     addTimer(t);
-    return () => { clearTimers(); };
+
+    // ── Watchdogs ──
+    // An intro that stalls doesn't degrade the site, it hides it: the overlay
+    // covers everything and only its own timeline can take it away. These sit
+    // outside timersRef so runExit's clearTimers() can't disarm them.
+    // 6s is roughly double the choreography's ~3s run.
+    const forceExit = window.setTimeout(runExit, 6000);
+    const forceDone = window.setTimeout(finish, 9000);
+
+    return () => {
+      clearTimers();
+      window.clearTimeout(forceExit);
+      window.clearTimeout(forceDone);
+    };
   }, [onComplete]);
 
   return (
@@ -255,6 +375,41 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
         style={{ background: "#05080f", clipPath: "circle(120% at 50% 50%)" }}
         aria-hidden="true"
       >
+        {/* ── Slat curtain ──
+            The opaque backdrop, cut into strips. It's what actually lifts on
+            exit; the overlay's own background is dropped first so the page
+            shows through the gaps as the wave passes. */}
+        {Array.from({ length: SLATS }, (_, i) => (
+          <div
+            key={i}
+            ref={(el) => {
+              slatRefs.current[i] = el;
+            }}
+            className="absolute bottom-0 top-0"
+            style={{
+              zIndex: 0,
+              left: `${(i * 100) / SLATS}%`,
+              // +1px so sub-pixel rounding can't open a hairline onto the page.
+              width: `calc(${100 / SLATS}% + 1px)`,
+              background: "#05080f",
+              willChange: "transform",
+            }}
+          >
+            {/* Seam light on the leading edge — reads as the strip peeling up
+                rather than simply disappearing. */}
+            <span
+              className="absolute inset-x-0 bottom-0"
+              style={{
+                height: "2px",
+                opacity: 0,
+                background:
+                  "linear-gradient(90deg, transparent, rgba(139,92,246,0.95), rgba(34,211,238,0.8), transparent)",
+                boxShadow: "0 0 18px 4px rgba(139,92,246,0.45)",
+              }}
+            />
+          </div>
+        ))}
+
         {/* ── Animated ambient orbs ── */}
         <div
           ref={orb1Ref}
@@ -293,6 +448,10 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
           }}
         />
 
+        {/* ── Atmosphere: grain, vignette, scan line, monogram ──
+            Grouped so the exit can clear the lot in one tween, leaving nothing
+            but the slats to lift. */}
+        <div ref={decorRef} className="pointer-events-none absolute inset-0" style={{ zIndex: 2 }}>
         {/* ── Film-grain noise ── */}
         <div
           className="pointer-events-none absolute inset-0"
@@ -331,19 +490,7 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
         >
           JA · 2026
         </div>
-
-        {/* ── Seam glow — bottom edge light that signals the curtain lifting ── */}
-        <div
-          ref={seamRef}
-          className="pointer-events-none absolute bottom-0 left-0 right-0"
-          style={{
-            height: "2px",
-            background: "linear-gradient(90deg, transparent 0%, rgba(139,92,246,0.9) 25%, rgba(34,211,238,0.7) 50%, rgba(139,92,246,0.9) 75%, transparent 100%)",
-            boxShadow: "0 0 18px 4px rgba(139,92,246,0.45), 0 0 40px 8px rgba(34,211,238,0.15)",
-            opacity: 0,
-            zIndex: 20,
-          }}
-        />
+        </div>
 
         {/* ── Rotating thin ring behind the word ── */}
         <div
@@ -378,17 +525,45 @@ export default function IntroScreen({ onComplete }: { onComplete: () => void }) 
             }}
           />
 
-          {/* The word */}
-          <div style={{ overflow: "hidden", lineHeight: 1 }}>
-            <span
-              ref={wordRef}
-              className="block select-none text-center font-outfit font-black will-change-transform"
-              style={{
-                fontSize: "clamp(2.8rem, 9vw, 7rem)",
-                letterSpacing: "-0.025em",
-                lineHeight: 1,
-              }}
-            />
+          {/* The greeting, then the signature that replaces it. Both live in
+              the same grid cell so the swap costs no layout shift and the
+              accent rules above and below never move. */}
+          <div className="grid" style={{ lineHeight: 1 }}>
+            <div
+              className="col-start-1 row-start-1 flex items-center justify-center"
+              style={{ overflow: "hidden", lineHeight: 1 }}
+            >
+              <span
+                ref={wordRef}
+                className="font-outfit block select-none text-center font-black will-change-transform"
+                style={{
+                  fontSize: "clamp(2.8rem, 9vw, 7rem)",
+                  letterSpacing: "-0.025em",
+                  lineHeight: 1,
+                }}
+              />
+            </div>
+
+            <div className="col-start-1 row-start-1 flex flex-col items-center justify-center gap-3">
+              <span
+                ref={nameRef}
+                className="font-outfit block select-none whitespace-nowrap text-center font-black will-change-transform"
+                style={{
+                  fontSize: "clamp(1.5rem, 6vw, 4.2rem)",
+                  lineHeight: 1,
+                  color: "#ffffff",
+                }}
+              />
+              <span
+                ref={roleRef}
+                className="block select-none whitespace-nowrap text-center font-mono"
+                style={{
+                  fontSize: "clamp(0.5rem, 1.5vw, 0.68rem)",
+                  letterSpacing: "0.42em",
+                  color: "rgba(196,181,253,0.75)",
+                }}
+              />
+            </div>
           </div>
 
           {/* Bottom accent line — slides in from right */}

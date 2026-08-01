@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { resume, PROJECT_DETAILS_ENABLED } from "@/data/resume";
+import { visibleProjects, PROJECT_DETAILS_ENABLED } from "@/data/resume";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://jubayer-ahmed.vercel.app";
@@ -12,7 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/contact`, lastModified: now },
     // Don't advertise case studies while they 404.
     ...(PROJECT_DETAILS_ENABLED
-      ? resume.projects.map((p) => ({
+      ? visibleProjects.map((p) => ({
           url: `${baseUrl}/projects/${p.slug}`,
           lastModified: now,
         }))

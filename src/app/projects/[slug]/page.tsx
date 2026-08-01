@@ -4,7 +4,7 @@ import Image from "next/image";
 import { ArrowLeft, ArrowRight, ExternalLink, Tag, CheckCircle2, Layers } from "lucide-react";
 import type { Metadata } from "next";
 
-import { resume, projectBySlug, PROJECT_DETAILS_ENABLED } from "@/data/resume";
+import { visibleProjects, projectBySlug, PROJECT_DETAILS_ENABLED } from "@/data/resume";
 import TechBadge from "@/components/ui/TechBadge";
 import StatusBadge from "@/components/ui/StatusBadge";
 
@@ -17,7 +17,7 @@ export const dynamicParams = false;
 // PROJECT_DETAILS_ENABLED goes back to true.
 export function generateStaticParams() {
   if (!PROJECT_DETAILS_ENABLED) return [];
-  return resume.projects.map((p) => ({ slug: p.slug }));
+  return visibleProjects.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata(
@@ -49,8 +49,8 @@ export default async function ProjectPage(
   const project = projectBySlug(slug);
   if (!project) notFound();
 
-  const index = resume.projects.findIndex((p) => p.slug === slug);
-  const next = resume.projects[(index + 1) % resume.projects.length];
+  const index = visibleProjects.findIndex((p) => p.slug === slug);
+  const next = visibleProjects[(index + 1) % visibleProjects.length];
   const cover = project.images?.[0];
 
   return (

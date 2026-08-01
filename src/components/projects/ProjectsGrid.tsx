@@ -9,6 +9,7 @@ import { ExternalLink, ArrowRight } from "lucide-react";
 import { PROJECT_DETAILS_ENABLED, type ProjectItem } from "@/data/resume";
 import TechBadge from "@/components/ui/TechBadge";
 import StatusBadge from "@/components/ui/StatusBadge";
+import TiltCard from "@/components/ui/TiltCard";
 import { useSpotlight } from "@/components/ui/useSpotlight";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -158,7 +159,7 @@ export default function ProjectsGrid({ projects }: { projects: readonly ProjectI
         {/* ── Grid ── */}
         <m.div ref={gridRef} layout className="grid gap-5 md:grid-cols-2">
           <AnimatePresence mode="popLayout" initial={false}>
-            {filtered.map((p) => {
+            {filtered.map((p, i) => {
               const live = p.links.find((l) => l.label === "Live");
               const cover = p.images?.[0];
 
@@ -166,110 +167,128 @@ export default function ProjectsGrid({ projects }: { projects: readonly ProjectI
                 <m.article
                   key={p.slug}
                   layout
-                  initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
-                  transition={{ duration: 0.26, ease: EASE }}
-                  className="card spotlight group relative flex h-full flex-col"
+                  // Cards are dealt rather than faded: each arrives tipped back
+                  // in space and rights itself, a beat behind the one before.
+                  initial={
+                    reduceMotion ? false : { opacity: 0, y: 26, rotateX: -12, scale: 0.97 }
+                  }
+                  animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+                  exit={
+                    reduceMotion
+                      ? { opacity: 0 }
+                      : { opacity: 0, scale: 0.94, rotateX: 10, transition: { duration: 0.2 } }
+                  }
+                  transition={{
+                    duration: 0.44,
+                    ease: EASE,
+                    // Capped so a long list doesn't leave the last card waiting.
+                    delay: reduceMotion ? 0 : Math.min(i * 0.05, 0.3),
+                  }}
+                  style={{ transformPerspective: 1400 }}
+                  className="h-full"
                 >
-                  {/* Cover — object-cover anchored to the top. Several captures
-                      are full-page and taller than they are wide; contain would
-                      shrink those to a thin sliver inside the 16:9 frame. */}
-                  <CoverFrame slug={p.slug} live={live?.href}>
-                    <div className="relative aspect-[16/9]">
-                      {cover ? (
-                        <Image
-                          src={cover.src}
-                          alt=""
-                          fill
-                          sizes="(max-width: 768px) 100vw, 560px"
-                          className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
-                        />
-                      ) : (
-                        <div className="dot-grid flex h-full w-full items-center justify-center">
+                  <TiltCard className="h-full" max={6}>
+                    <div className="card card-shimmer spotlight group flex h-full flex-col">
+                      {/* Cover — object-cover anchored to the top. Several captures
+                          are full-page and taller than they are wide; contain would
+                          shrink those to a thin sliver inside the 16:9 frame. */}
+                      <CoverFrame slug={p.slug} live={live?.href}>
+                        <div className="relative aspect-[16/9]">
+                          {cover ? (
+                            <Image
+                              src={cover.src}
+                              alt=""
+                              fill
+                              sizes="(max-width: 768px) 100vw, 560px"
+                              className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.07]"
+                            />
+                          ) : (
+                            <div className="dot-grid flex h-full w-full items-center justify-center">
+                              <span
+                                className="font-outfit px-4 text-center text-xl font-bold tracking-tight"
+                                style={{ color: "var(--fg-3)" }}
+                              >
+                                {p.title}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </CoverFrame>
+
+                      <div className="flex flex-1 flex-col gap-3.5 p-5 sm:p-6">
+                        {/* Meta */}
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                           <span
-                            className="font-outfit px-4 text-center text-xl font-bold tracking-tight"
-                            style={{ color: "var(--fg-3)" }}
+                            className="border px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider"
+                            style={{
+                              color: "var(--fg-4)",
+                              background: "var(--surface-2)",
+                              borderColor: "var(--border)",
+                            }}
                           >
-                            {p.title}
+                            {p.category}
                           </span>
                         </div>
-                      )}
+
+                        {/* Title */}
+                        <div>
+                          <h2
+                            className="font-outfit text-lg font-bold tracking-tight md:text-xl"
+                            style={{ color: "var(--fg)" }}
+                          >
+                            <CardTitleLink slug={p.slug} live={live?.href}>
+                              {p.title}
+                            </CardTitleLink>
+                          </h2>
+                          <p className="mt-0.5 text-xs font-medium" style={{ color: "var(--fg-4)" }}>
+                            {p.tagline}
+                          </p>
+                        </div>
+
+                        {p.status && <StatusBadge status={p.status} />}
+
+                        <p className="text-sm leading-relaxed" style={{ color: "var(--fg-3)" }}>
+                          {p.description}
+                        </p>
+
+                        <div className="flex flex-wrap gap-1.5">
+                          {p.stack.slice(0, 7).map((t) => (
+                            <TechBadge key={t} name={t} />
+                          ))}
+                          {p.stack.length > 7 && (
+                            <span className="tag">+{p.stack.length - 7}</span>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="relative z-10 mt-auto flex flex-wrap items-center gap-2.5 pt-1.5">
+                          {PROJECT_DETAILS_ENABLED && (
+                            <Link
+                              href={`/projects/${p.slug}`}
+                              className="btn btn-primary group/btn px-4 py-2 text-xs"
+                            >
+                              Case study
+                              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+                            </Link>
+                          )}
+                          {live && (
+                            <a
+                              href={live.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              // With case studies off this is the card's primary action.
+                              className={`btn group/btn px-4 py-2 text-xs ${
+                                PROJECT_DETAILS_ENABLED ? "btn-ghost" : "btn-primary"
+                              }`}
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                              Live site
+                            </a>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </CoverFrame>
-
-                  <div className="flex flex-1 flex-col gap-3.5 p-5 sm:p-6">
-                    {/* Meta */}
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span
-                        className="border px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider"
-                        style={{
-                          color: "var(--fg-4)",
-                          background: "var(--surface-2)",
-                          borderColor: "var(--border)",
-                        }}
-                      >
-                        {p.category}
-                      </span>
-                    </div>
-
-                    {/* Title */}
-                    <div>
-                      <h2
-                        className="font-outfit text-lg font-bold tracking-tight md:text-xl"
-                        style={{ color: "var(--fg)" }}
-                      >
-                        <CardTitleLink slug={p.slug} live={live?.href}>
-                          {p.title}
-                        </CardTitleLink>
-                      </h2>
-                      <p className="mt-0.5 text-xs font-medium" style={{ color: "var(--fg-4)" }}>
-                        {p.tagline}
-                      </p>
-                    </div>
-
-                    {p.status && <StatusBadge status={p.status} />}
-
-                    <p className="text-sm leading-relaxed" style={{ color: "var(--fg-3)" }}>
-                      {p.description}
-                    </p>
-
-                    <div className="flex flex-wrap gap-1.5">
-                      {p.stack.slice(0, 7).map((t) => (
-                        <TechBadge key={t} name={t} />
-                      ))}
-                      {p.stack.length > 7 && (
-                        <span className="tag">+{p.stack.length - 7}</span>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="relative z-10 mt-auto flex flex-wrap items-center gap-2.5 pt-1.5">
-                      {PROJECT_DETAILS_ENABLED && (
-                        <Link
-                          href={`/projects/${p.slug}`}
-                          className="btn btn-primary group/btn px-4 py-2 text-xs"
-                        >
-                          Case study
-                          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
-                        </Link>
-                      )}
-                      {live && (
-                        <a
-                          href={live.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          // With case studies off this is the card's primary action.
-                          className={`btn group/btn px-4 py-2 text-xs ${
-                            PROJECT_DETAILS_ENABLED ? "btn-ghost" : "btn-primary"
-                          }`}
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                          Live site
-                        </a>
-                      )}
-                    </div>
-                  </div>
+                  </TiltCard>
                 </m.article>
               );
             })}
