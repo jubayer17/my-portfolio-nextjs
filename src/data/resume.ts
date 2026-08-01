@@ -477,7 +477,7 @@ export const resume = {
                 "JWT auth",
                 "REST APIs",
             ],
-            links: [{ label: "Live", href: "https://job-board-client-six.vercel.app/" }],
+            links: [{ label: "Live", href: "http://13.140.141.131:3030/" }],
             images: [
                 {
                     src: "/assets/hirebd-SS.png",
